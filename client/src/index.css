@@ -1,0 +1,263 @@
+/* ============================================================================
+   TECH HUNT — Global Styles & Design System
+   Dark, cyberpunk-inspired theme with neon accents.
+   ============================================================================ */
+
+@import "tailwindcss";
+
+/* ─── Custom Theme ──────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Background & Surface */
+  --color-bg-primary: #0a0e1a;
+  --color-bg-secondary: #111827;
+  --color-bg-surface: #1a2035;
+  --color-bg-elevated: #1e293b;
+  --color-bg-glass: rgba(17, 24, 39, 0.8);
+
+  /* Neon Accent Colors */
+  --color-neon-cyan: #00f0ff;
+  --color-neon-purple: #a855f7;
+  --color-neon-pink: #ec4899;
+  --color-neon-green: #22c55e;
+  --color-neon-orange: #f97316;
+  --color-neon-blue: #3b82f6;
+
+  /* Text */
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-accent: #00f0ff;
+
+  /* Borders */
+  --color-border-default: #1e293b;
+  --color-border-focus: #00f0ff;
+
+  /* Status */
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Fonts */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Shadows */
+  --shadow-neon-cyan: 0 0 20px rgba(0, 240, 255, 0.3);
+  --shadow-neon-purple: 0 0 20px rgba(168, 85, 247, 0.3);
+  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── Base Resets ───────────────────────────────────────────────────────────── */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ─── Utility Classes ───────────────────────────────────────────────────────── */
+
+.glass-panel {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-default);
+  border-radius: 16px;
+}
+
+.neon-border {
+  border: 1px solid var(--color-neon-cyan);
+  box-shadow: var(--shadow-neon-cyan);
+}
+
+.neon-text {
+  color: var(--color-neon-cyan);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--color-neon-cyan),
+    var(--color-neon-purple)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Animations ────────────────────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(0, 240, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ─── Form Elements ─────────────────────────────────────────────────────────── */
+
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--color-neon-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.1);
+}
+
+.input-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px 24px;
+  background: linear-gradient(
+    135deg,
+    var(--color-neon-cyan),
+    var(--color-neon-blue)
+  );
+  border: none;
+  border-radius: 10px;
+  color: var(--color-bg-primary);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-neon-cyan);
+  color: var(--color-neon-cyan);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+/* ─── Background Grid Effect ───────────────────────────────────────────────── */
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

@@ -1,0 +1,108 @@
+<div align="center">
+
+```
+████████╗███████╗ ██████╗██╗  ██╗    ██╗  ██╗██╗   ██╗███╗   ██╗████████╗
+╚══██╔══╝██╔════╝██╔════╝██║  ██║    ██║  ██║██║   ██║████╗  ██║╚══██╔══╝
+   ██║   █████╗  ██║     ███████║    ███████║██║   ██║██╔██╗ ██║   ██║
+   ██║   ██╔══╝  ██║     ██╔══██║    ██╔══██║██║   ██║██║╚██╗██║   ██║
+   ██║   ███████╗╚██████╗██║  ██║    ██║  ██║╚██████╔╝██║ ╚████║   ██║
+   ╚═╝   ╚══════╝ ╚═════╝╚═╝  ╚═╝    ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝
+```
+
+A procedural multiplayer escape-room puzzle platform for the technically curious.
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![Socket.io](https://img.shields.io/badge/Socket.io-4.x-010101?style=flat-square&logo=socket.io)](https://socket.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+
+</div>
+
+---
+
+## What is it?
+
+Tech Hunt is an online escape room where the rooms are locked by **technical puzzles** — binary decoding, hex conversion, ASCII challenges, and coding problems. Every game generates a brand new building layout. No two runs are the same.
+
+Teams of up to 5 players share a map, a chat, and a notepad. One player solves a puzzle — everyone advances. The leaderboard rewards speed and efficiency.
+
+**Cipher Mode** — for puzzle fans. No code required.  
+**Programmer Mode** — for developers. Debug, trace, predict.
+
+---
+
+## Stack
+
+| Layer | Tech |
+|-------|------|
+| Frontend | React 18 + Vite + TailwindCSS v4 |
+| Backend | Node.js + Express + Socket.io |
+| Database | PostgreSQL (via Neon) |
+| Shared types | TypeScript monorepo (`@techhunt/shared`) |
+| Hosting | Vercel (client) · Railway (server) |
+
+---
+
+## Getting Started
+
+```bash
+# Clone and install (workspaces install everything)
+git clone https://github.com/yourusername/techhunt.git
+cd techhunt && npm install
+
+# Set up environment variables
+cp server/.env.example server/.env
+cp client/.env.example client/.env
+
+# Run database migrations
+cd server && npm run migrate
+
+# Start both servers from root
+npm run dev
+```
+
+Then open `http://localhost:5173`.
+
+**Required env vars** — `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN` in `server/.env`. See `.env.example` for the full list.
+
+---
+
+## Project Structure
+
+```
+techhunt/
+├── shared/       ← Types, enums, constants, socket event names
+├── server/       ← Express + Socket.io + generation engine + DB models
+└── client/       ← React + Vite + TailwindCSS
+```
+
+The `shared/` package is the single source of truth — imported by both client and server. No type drift, no duplicated constants.
+
+---
+
+## Core Rules (for contributors)
+
+1. **Puzzle answers never leave the server.** All validation is server-side.
+2. **REST for persistence. Socket.io for real-time sync.** Never mix their roles.
+3. **All data structures support multiplayer** — even solo features.
+4. **`shared/` owns all types, enums, and socket event name constants.**
+5. **`engine/` is pure functions only.** No DB calls, no Express, no side effects.
+
+---
+
+## Roadmap
+
+- [x] Monorepo scaffold + shared types
+- [x] Auth (JWT)
+- [ ] Procedural building + puzzle generation
+- [ ] REST API + Socket.io real-time layer
+- [ ] React frontend (desktop + mobile)
+- [ ] Leaderboard
+- [ ] Friends list · Hybrid mode · Daily challenge
+- [ ] Custom hunt builder for events and competitions
+
+---
+
+<div align="center">
+Built with too much coffee and a deep suspicion that binary is underrated.
+</div>

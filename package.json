@@ -1,0 +1,9 @@
+{
+  "name": "techhunt",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ]
+}
