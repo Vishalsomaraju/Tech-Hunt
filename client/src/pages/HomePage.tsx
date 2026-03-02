@@ -11,7 +11,8 @@ export function HomePage() {
   const { isConnected } = useSocket();
 
   return (
-    <div className="bg-grid" style={styles.container}>
+    <div style={styles.container}>
+      <div className="bg-grid" style={styles.grid} />
       {/* Ambient glow */}
       <div style={styles.ambientOrb1} />
       <div style={styles.ambientOrb2} />
@@ -167,6 +168,7 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: "100vh",
     position: "relative",
     overflow: "hidden",
+    background: "var(--color-bg-primary)",
   },
   ambientOrb1: {
     position: "fixed",
@@ -307,5 +309,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   actionBtn: {
     marginTop: "0.5rem",
+  },
+  grid: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 0,
   },
 };

@@ -32,7 +32,8 @@ export function LoginPage() {
   };
 
   return (
-    <div className="bg-grid" style={styles.container}>
+    <div style={styles.container}>
+      <div className="bg-grid" style={styles.grid} />
       {/* Floating ambient light effects */}
       <div style={styles.ambientOrb1} />
       <div style={styles.ambientOrb2} />
@@ -115,6 +116,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "1rem",
     position: "relative",
     overflow: "hidden",
+    background: "var(--color-bg-primary)",
   },
   ambientOrb1: {
     position: "absolute",
@@ -199,5 +201,10 @@ const styles: Record<string, React.CSSProperties> = {
     color: "var(--color-neon-cyan)",
     textDecoration: "none",
     fontWeight: 500,
+  },
+  grid: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 0,
   },
 };

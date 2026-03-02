@@ -161,6 +161,20 @@ body {
   }
 }
 
+@keyframes grid-drift {
+  0% {
+    background-position:
+      0px 0px,
+      0px 0px;
+  }
+
+  100% {
+    background-position:
+      40px 40px,
+      40px 40px;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -256,8 +270,43 @@ body {
 /* ─── Background Grid Effect ───────────────────────────────────────────────── */
 
 .bg-grid {
+  position: relative;
+
   background-image:
-    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+
   background-size: 40px 40px;
+
+  animation: grid-drift 22s linear infinite;
+
+  overflow: hidden;
+}
+
+.bg-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 240, 255, 0.04),
+    transparent 60%
+  );
+
+  pointer-events: none;
+}
+
+.bg-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: radial-gradient(
+    250px circle at var(--mouse-x) var(--mouse-y),
+    rgba(10, 14, 26, 0.9),
+    transparent 70%
+  );
+
+  pointer-events: none;
 }
