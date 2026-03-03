@@ -1,33 +1,36 @@
+"use strict";
 // ============================================================================
 // TECH HUNT — Shared Constants
 // All magic numbers and config values live here. Never hardcode these elsewhere.
 // ============================================================================
-import { HintLevel } from "./enums";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MAX_USERNAME_LENGTH = exports.MIN_PASSWORD_LENGTH = exports.JWT_EXPIRY = exports.TEAM_CODE_LENGTH = exports.DEFAULT_ROOMS_PER_FLOOR = exports.DEFAULT_FLOORS = exports.MAX_TIME_BONUS = exports.MIN_TIME_BONUS = exports.ROOM_COUNTDOWN_SECONDS = exports.MAX_TEAM_SIZE = exports.HINT_PENALTIES = exports.PUZZLE_BASE_SCORE = void 0;
+const enums_1 = require("./enums");
 /** Points awarded for solving a puzzle (before bonuses / penalties) */
-export const PUZZLE_BASE_SCORE = 100;
+exports.PUZZLE_BASE_SCORE = 100;
 /** Score penalties for each hint level */
-export const HINT_PENALTIES = {
-    [HintLevel.SMALL]: 15,
-    [HintLevel.MEDIUM]: 30,
-    [HintLevel.LARGE]: 50,
+exports.HINT_PENALTIES = {
+    [enums_1.HintLevel.SMALL]: 15,
+    [enums_1.HintLevel.MEDIUM]: 30,
+    [enums_1.HintLevel.LARGE]: 50,
 };
 /** Maximum number of players allowed in a single team */
-export const MAX_TEAM_SIZE = 5;
+exports.MAX_TEAM_SIZE = 5;
 /** Default countdown timer for a puzzle room (in seconds) */
-export const ROOM_COUNTDOWN_SECONDS = 60;
+exports.ROOM_COUNTDOWN_SECONDS = 60;
 /** Time bonus range — bonus scales linearly between these bounds */
-export const MIN_TIME_BONUS = 0;
-export const MAX_TIME_BONUS = 50;
+exports.MIN_TIME_BONUS = 0;
+exports.MAX_TIME_BONUS = 50;
 /** Default number of floors in a building */
-export const DEFAULT_FLOORS = 1;
+exports.DEFAULT_FLOORS = 1;
 /** Default number of rooms per floor */
-export const DEFAULT_ROOMS_PER_FLOOR = 5;
+exports.DEFAULT_ROOMS_PER_FLOOR = 5;
 /** Team invite code length */
-export const TEAM_CODE_LENGTH = 6;
+exports.TEAM_CODE_LENGTH = 6;
 /** JWT token expiry duration */
-export const JWT_EXPIRY = "7d";
+exports.JWT_EXPIRY = "7d";
 /** Minimum password length for registration */
-export const MIN_PASSWORD_LENGTH = 6;
+exports.MIN_PASSWORD_LENGTH = 6;
 /** Maximum username length */
-export const MAX_USERNAME_LENGTH = 32;
+exports.MAX_USERNAME_LENGTH = 32;
 //# sourceMappingURL=constants.js.map

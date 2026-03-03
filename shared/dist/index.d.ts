@@ -1,5 +1,5 @@
-export * from "./enums";
-export * from "./constants";
-export * from "./types";
-export * as SocketEvents from "./events";
+export * from "./enums.js";
+export * from "./constants.js";
+export * from "./types.js";
+export * from "./events.js";
 //# sourceMappingURL=index.d.ts.map
