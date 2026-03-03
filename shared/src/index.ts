@@ -3,7 +3,7 @@
 // Re-exports everything so consumers can import from '@techhunt/shared'.
 // ============================================================================
 
-export * from "./enums.js";
-export * from "./constants.js";
-export * from "./types.js";
-export * from "./events.js";
+export * from "./enums";
+export * from "./constants";
+export * from "./types";
+export * from "./events";
