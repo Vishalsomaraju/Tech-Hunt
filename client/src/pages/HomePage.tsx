@@ -126,7 +126,7 @@ export function HomePage() {
             color: "var(--accent)",
           }}
         >
-          TECH HUNT
+          TECH-HUNT
         </h1>
         <div className="flex items-center" style={{ gap: "16px" }}>
           <button
@@ -169,7 +169,7 @@ export function HomePage() {
             className="font-mono transition-colors"
             style={{
               fontSize: "12px",
-              color: "var(--text-dim)",
+              color: "rgba(255,0,0,1)",
               background: "transparent",
               border: "none",
               cursor: "pointer",
@@ -260,14 +260,22 @@ export function HomePage() {
                       {m.disabled && (
                         <span
                           style={{
-                            fontSize: "10px",
-                            background: "var(--bg-elevated)",
-                            color: "var(--text-dim)",
-                            padding: "2px 8px",
-                            borderRadius: "99px",
+                            fontSize: "11px",
+                            fontWeight: 500,
+                            background: "rgba(255,165,0,0.12)",
+                            color: "#ffb347",
+                            padding: "4px 10px",
+                            border: "1px solid rgba(255,165,0,0.4)",
+                            borderRadius: "999px",
+                            letterSpacing: "0.3px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            backdropFilter: "blur(4px)",
+                            boxShadow: "0 0 8px rgba(255,165,0,0.15)",
                           }}
                         >
-                          Coming soon
+                          Coming Soon
                         </span>
                       )}
                     </div>

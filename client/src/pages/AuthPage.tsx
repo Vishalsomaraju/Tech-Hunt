@@ -3,7 +3,7 @@
 // Three-tab interface: Login | Register | Play as Guest
 // ============================================================================
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -35,10 +35,11 @@ export function AuthPage() {
   const [guestName, setGuestName] = useState("");
 
   // If already authenticated, redirect
-  if (isAuthenticated) {
-    navigate(from, { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -105,10 +106,7 @@ export function AuthPage() {
   ];
 
   return (
-    <div
-      className="flex items-center justify-center min-h-screen p-4"
-      style={{ background: "var(--bg-base)" }}
-    >
+    <div className="bg-grid flex items-center justify-center min-h-screen p-4">
       <div className="w-full" style={{ maxWidth: "440px" }}>
         {/* Card */}
         <div className="panel border-glow" style={{ padding: "40px" }}>

@@ -36,10 +36,7 @@ function GameLayout() {
 
   if (!state.loaded) {
     return (
-      <div
-        className="flex items-center justify-center min-h-screen"
-        style={{ background: "var(--bg-base)" }}
-      >
+      <div className="bg-grid h-screen flex flex-col">
         <div
           className="font-mono glow-text animate-pulse-glow"
           style={{ fontSize: "16px", color: "var(--accent)" }}
