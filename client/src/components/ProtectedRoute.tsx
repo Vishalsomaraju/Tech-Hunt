@@ -1,10 +1,9 @@
 // ============================================================================
 // TECH HUNT Client — Protected Route Component
-// Wraps routes that require authentication.
-// Redirects unauthenticated users to /login.
+// Redirects unauthenticated users to /auth, preserving intended destination.
 // ============================================================================
 
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 interface ProtectedRouteProps {
@@ -12,29 +11,19 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
-  // Show nothing while checking auth state
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-        }}
-      >
-        <div className="neon-text" style={{ fontSize: "1.2rem" }}>
-          Loading...
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="neon-text text-lg font-mono">AUTHENTICATING...</div>
       </div>
     );
   }
 
-  // Not authenticated → redirect to login
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" state={{ from: location.pathname }} replace />;
   }
 
   return <>{children}</>;

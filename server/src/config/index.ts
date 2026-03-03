@@ -38,6 +38,9 @@ export function validateConfig(): void {
   if (config.jwtSecret === "dev-secret-change-me" && config.isProduction) {
     missing.push("JWT_SECRET (must be set in production)");
   }
+  if (config.isProduction && config.jwtSecret.length < 32) {
+    missing.push("JWT_SECRET (must be at least 32 characters in production)");
+  }
 
   if (missing.length > 0) {
     console.error(

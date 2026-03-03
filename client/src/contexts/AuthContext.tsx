@@ -1,7 +1,6 @@
 // ============================================================================
 // TECH HUNT Client — Auth Context
-// Manages JWT token storage, user state, and auth API calls.
-// Provides login/register/logout to the entire component tree.
+// Manages JWT token, guest identity, and socket connect/disconnect lifecycle.
 // ============================================================================
 
 import {
@@ -12,23 +11,28 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import type { User, AuthResponse } from "@techhunt/shared";
+import { auth as authApi, type AuthUser } from "../api/index";
+import { socket } from "../socket";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface AuthState {
-  user: User | null;
+  user: AuthUser | null;
+  guestName: string | null;
   token: string | null;
   isLoading: boolean;
 }
 
 interface AuthContextType extends AuthState {
+  isGuest: boolean;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (
     username: string,
     email: string,
     password: string,
   ) => Promise<void>;
+  loginAsGuest: (name: string) => void;
   logout: () => void;
 }
 
@@ -38,101 +42,127 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const TOKEN_KEY = "techhunt_token";
 const USER_KEY = "techhunt_user";
-const API_BASE = "/api/auth";
+const GUEST_KEY = "techhunt_guest";
 
 // ─── Provider ────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
+    guestName: null,
     token: null,
     isLoading: true,
   });
 
-  // Restore session from localStorage on mount
+  // Restore session on mount
   useEffect(() => {
     const savedToken = localStorage.getItem(TOKEN_KEY);
     const savedUser = localStorage.getItem(USER_KEY);
+    const savedGuest = localStorage.getItem(GUEST_KEY);
 
     if (savedToken && savedUser) {
       try {
-        const user = JSON.parse(savedUser) as User;
-        setState({ user, token: savedToken, isLoading: false });
+        const user = JSON.parse(savedUser) as AuthUser;
+        setState({
+          user,
+          guestName: null,
+          token: savedToken,
+          isLoading: false,
+        });
+
+        // Verify token is still valid
+        authApi.me().catch(() => {
+          // Token expired — clear
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          setState({
+            user: null,
+            guestName: null,
+            token: null,
+            isLoading: false,
+          });
+        });
+
+        // Connect socket
+        if (!socket.connected) socket.connect();
       } catch {
-        // Corrupted data — clear it
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
         setState((prev) => ({ ...prev, isLoading: false }));
       }
+    } else if (savedGuest) {
+      setState({
+        user: null,
+        guestName: savedGuest,
+        token: null,
+        isLoading: false,
+      });
+      if (!socket.connected) socket.connect();
     } else {
       setState((prev) => ({ ...prev, isLoading: false }));
     }
   }, []);
 
-  /**
-   * Saves auth data to state and localStorage.
-   */
-  const saveAuth = useCallback((data: AuthResponse) => {
+  const saveAuth = useCallback((data: { token: string; user: AuthUser }) => {
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-    setState({ user: data.user, token: data.token, isLoading: false });
+    localStorage.removeItem(GUEST_KEY);
+    setState({
+      user: data.user,
+      guestName: null,
+      token: data.token,
+      isLoading: false,
+    });
+    if (!socket.connected) socket.connect();
   }, []);
 
-  /**
-   * Registers a new user account and logs them in.
-   */
-  const register = useCallback(
-    async (username: string, email: string, password: string) => {
-      const res = await fetch(`${API_BASE}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      });
-
-      const body = await res.json();
-
-      if (!res.ok) {
-        throw new Error(body.message || "Registration failed");
-      }
-
-      saveAuth(body.data);
-    },
-    [saveAuth],
-  );
-
-  /**
-   * Logs in with email and password.
-   */
   const login = useCallback(
     async (email: string, password: string) => {
-      const res = await fetch(`${API_BASE}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const body = await res.json();
-
-      if (!res.ok) {
-        throw new Error(body.message || "Login failed");
-      }
-
-      saveAuth(body.data);
+      const data = await authApi.login(email, password);
+      saveAuth(data);
     },
     [saveAuth],
   );
 
-  /**
-   * Logs out: clears token and user data.
-   */
+  const register = useCallback(
+    async (username: string, email: string, password: string) => {
+      const data = await authApi.register(username, email, password);
+      saveAuth(data);
+    },
+    [saveAuth],
+  );
+
+  const loginAsGuest = useCallback((name: string) => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.setItem(GUEST_KEY, name);
+    setState({ user: null, guestName: name, token: null, isLoading: false });
+    if (!socket.connected) socket.connect();
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    setState({ user: null, token: null, isLoading: false });
+    localStorage.removeItem(GUEST_KEY);
+    setState({ user: null, guestName: null, token: null, isLoading: false });
+    if (socket.connected) socket.disconnect();
   }, []);
 
+  const isGuest = !state.user && !!state.guestName;
+  const isAuthenticated = !!state.user || !!state.guestName;
+
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        isGuest,
+        isAuthenticated,
+        login,
+        register,
+        loginAsGuest,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -140,10 +170,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
-/**
- * Access auth state and actions from any component.
- * Must be used within <AuthProvider>.
- */
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {

@@ -6,10 +6,13 @@
 
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { createServer } from "http";
+import { Server } from "socket.io";
 import { config, validateConfig } from "./config/index.js";
 import { testConnection } from "./db/pool.js";
-import { initializeSocket } from "./socket/index.js";
+import { initSocketHandlers } from "./socket/index.js";
 import healthRouter from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import teamsRouter from "./routes/teams.js";
@@ -28,8 +31,37 @@ async function main(): Promise<void> {
   const app = express();
 
   // ── Global middleware ──
+  app.use(helmet({ contentSecurityPolicy: false })); // CSP handled by client meta tag
   app.use(cors({ origin: config.corsOrigin, credentials: true }));
-  app.use(express.json());
+  app.use(express.json({ limit: "1mb" }));
+
+  // Rate limiting — 100 requests per 15 min per IP
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      error: "RATE_LIMIT",
+      message: "Too many requests — slow down",
+    },
+  });
+  app.use("/api/", apiLimiter);
+
+  // Stricter limiter for auth endpoints — 20 per 15 min
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      error: "RATE_LIMIT",
+      message: "Too many auth attempts",
+    },
+  });
+  app.use("/api/auth", authLimiter);
 
   // ── REST routes ──
   app.use("/api/health", healthRouter);
@@ -37,11 +69,34 @@ async function main(): Promise<void> {
   app.use("/api/teams", teamsRouter);
   app.use("/api/sessions", sessionsRouter);
 
+  // ── Global error handler ──
+  app.use(
+    (
+      err: Error,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction,
+    ) => {
+      console.error("Unhandled error:", err);
+      res.status(500).json({
+        success: false,
+        error: "SERVER_ERROR",
+        message: config.isProduction ? "Internal server error" : err.message,
+      });
+    },
+  );
+
   // 4. Create HTTP server (shared between Express and Socket.io)
   const httpServer = createServer(app);
 
-  // 5. Attach Socket.io
-  const io = initializeSocket(httpServer);
+  // 5. Create Socket.io instance and attach event handlers
+  const io = new Server(httpServer, {
+    cors: {
+      origin: config.corsOrigin,
+      methods: ["GET", "POST"],
+    },
+  });
+  initSocketHandlers(io);
   console.log("🔌 Socket.io attached");
 
   // 6. Start listening
