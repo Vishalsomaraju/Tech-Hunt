@@ -412,7 +412,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
       const publicData = toBuildingPublic(gen);
 
       // Override room statuses with the runtime (may differ from engine defaults)
-      const rooms = gen.building.rooms.map((room, idx) => ({
+      const rooms = gen.building.rooms.map((room: any, idx: number) => ({
         id: room.id,
         buildingId: room.buildingId,
         floor: room.floor,

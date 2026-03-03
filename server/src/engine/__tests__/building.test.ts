@@ -79,7 +79,7 @@ test("every room has a matching puzzle", () => {
 
 test("all IDs are unique", () => {
   const { building, puzzles } = generateBuilding(SEED);
-  const roomIds = new Set(building.rooms.map((r) => r.id));
+  const roomIds = new Set(building.rooms.map((r: any) => r.id));
   assert.equal(roomIds.size, building.rooms.length, "Duplicate room IDs");
   const puzzleIds = new Set([...puzzles.values()].map((p) => p.id));
   assert.equal(puzzleIds.size, puzzles.size, "Duplicate puzzle IDs");
