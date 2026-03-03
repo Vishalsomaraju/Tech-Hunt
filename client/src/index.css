@@ -354,8 +354,8 @@ body {
   }
   100% {
     background-position:
-      40px 40px,
-      40px 40px;
+      80px 80px,
+      80px 80px;
   }
 }
 
@@ -392,11 +392,15 @@ body {
   content: "";
   position: absolute;
   inset: 0;
+
   background: radial-gradient(
     circle at center,
-    rgba(34, 211, 238, 0.04),
-    transparent 60%
+    rgba(34, 211, 238, 0.08),
+    transparent 65%
   );
+
+  animation: grid-pulse 6s ease-in-out infinite;
+
   pointer-events: none;
 }
 

@@ -64,6 +64,13 @@ export const UPDATE_NOTES = "notes:update";
 /** Server → others (not sender): notes were updated */
 export const NOTES_UPDATED = "notes:updated";
 
+// ─── Countdown Skip Events ───────────────────────────────────────────────────
+
+/** Client → server: player signals ready to skip countdown */
+export const PLAYER_READY = "player_ready";
+/** Server → client: countdown is being skipped now */
+export const SKIP_COUNTDOWN = "skip_countdown";
+
 // ─── System Events ───────────────────────────────────────────────────────────
 
 export const ERROR = "error:message";

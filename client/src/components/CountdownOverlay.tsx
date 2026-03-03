@@ -1,15 +1,65 @@
 // ============================================================================
 // TECH HUNT — Countdown Overlay Component
 // Full-screen overlay displayed during room countdown. Shows seconds,
-// circular progress ring, room info.
+// circular progress ring, room info, and READY button to skip countdown.
 // ============================================================================
 
+import { useState, useEffect } from "react";
 import { useGame } from "../contexts/GameContext";
 import { ROOM_COUNTDOWN_SECONDS } from "@techhunt/shared";
 
 export function CountdownOverlay() {
-  const { state } = useGame();
+  const { state, signalReady } = useGame();
   const timer = state.timer;
+  const [hasSignalled, setHasSignalled] = useState(false);
+  const [showSkipMessage, setShowSkipMessage] = useState(false);
+
+  // Reset hasSignalled when a new timer starts (new room)
+  useEffect(() => {
+    if (timer && timer.remaining > 0) {
+      setHasSignalled(false);
+      setShowSkipMessage(false);
+    }
+  }, [timer?.roomIndex]);
+
+  // Show "ALL AGENTS PRESENT" briefly when countdown is skipped
+  // (timer goes null while skipVotes === totalPlayers)
+  useEffect(() => {
+    if (
+      !timer &&
+      state.skipVotes > 0 &&
+      state.skipVotes >= state.totalPlayers
+    ) {
+      setShowSkipMessage(true);
+      const t = setTimeout(() => setShowSkipMessage(false), 500);
+      return () => clearTimeout(t);
+    }
+  }, [timer, state.skipVotes, state.totalPlayers]);
+
+  if (showSkipMessage) {
+    return (
+      <div
+        className="absolute inset-0 z-40 flex items-center justify-center"
+        style={{
+          background: "rgba(8, 15, 26, 0.88)",
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        <p
+          className="font-mono animate-fade-in"
+          style={{
+            fontSize: "18px",
+            fontWeight: 700,
+            color: "var(--accent)",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+          }}
+        >
+          ALL AGENTS PRESENT
+        </p>
+      </div>
+    );
+  }
 
   if (!timer || timer.remaining <= 0) return null;
 
@@ -25,6 +75,14 @@ export function CountdownOverlay() {
     : isWarning
       ? "var(--warning)"
       : "var(--accent)";
+
+  const handleReady = () => {
+    if (hasSignalled) return;
+    setHasSignalled(true);
+    signalReady(timer.roomIndex);
+  };
+
+  const { skipVotes, totalPlayers } = state;
 
   return (
     <div
@@ -97,9 +155,50 @@ export function CountdownOverlay() {
           </div>
         </div>
 
+        {/* READY button */}
+        <div style={{ marginBottom: "var(--space-md)" }}>
+          <button
+            onClick={handleReady}
+            disabled={hasSignalled}
+            className="btn-primary font-mono"
+            style={{
+              width: "auto",
+              padding: "10px 28px",
+              fontSize: "12px",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              ...(hasSignalled
+                ? {
+                    background: "transparent",
+                    borderColor: "var(--success)",
+                    color: "var(--success)",
+                    cursor: "default",
+                    opacity: 1,
+                  }
+                : {}),
+            }}
+          >
+            {hasSignalled ? "STANDING BY ✓" : "READY ↵"}
+          </button>
+        </div>
+
+        {/* Vote tracker */}
+        {totalPlayers > 0 && (
+          <p
+            className="font-mono"
+            style={{ fontSize: "12px", color: "var(--text-muted)" }}
+          >
+            {skipVotes} / {totalPlayers} agents ready
+          </p>
+        )}
+
         <p
           className="font-mono"
-          style={{ fontSize: "13px", color: "var(--text-dim)" }}
+          style={{
+            fontSize: "13px",
+            color: "var(--text-dim)",
+            marginTop: "var(--space-sm)",
+          }}
         >
           Puzzle activates soon…
         </p>

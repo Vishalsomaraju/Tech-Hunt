@@ -22,9 +22,18 @@ interface CountdownEntry {
   timeoutId: NodeJS.Timeout;
   /** Seconds remaining (decremented every tick) */
   remaining: number;
+  /** Callback to invoke when countdown ends (naturally or via skip) */
+  onExpire: (sessionId: string, roomIndex: number) => Promise<void>;
+  /** The session ID this timer belongs to */
+  sessionId: string;
+  /** The room index this timer belongs to */
+  roomIndex: number;
 }
 
 const timers = new Map<string, CountdownEntry>();
+
+/** Tracks which players are ready (arrived OR pressed READY) per room. */
+const readyPlayers = new Map<string, Set<string>>();
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -71,6 +80,9 @@ export function startCountdown(
     total: durationSec,
   });
 
+  // Initialise the ready-players set for this countdown
+  readyPlayers.set(k, new Set());
+
   // ── Per-second tick ──
   const intervalId = setInterval(() => {
     remaining -= 1;
@@ -87,6 +99,7 @@ export function startCountdown(
   const timeoutId = setTimeout(async () => {
     clearInterval(intervalId);
     timers.delete(k);
+    readyPlayers.delete(k);
 
     try {
       await onExpire(sessionId, roomIndex);
@@ -98,7 +111,14 @@ export function startCountdown(
     }
   }, durationSec * 1_000);
 
-  timers.set(k, { intervalId, timeoutId, remaining });
+  timers.set(k, {
+    intervalId,
+    timeoutId,
+    remaining,
+    onExpire,
+    sessionId,
+    roomIndex,
+  });
 }
 
 /**
@@ -113,6 +133,7 @@ export function cancelCountdown(sessionId: string, roomIndex: number): void {
   clearInterval(entry.intervalId);
   clearTimeout(entry.timeoutId);
   timers.delete(k);
+  readyPlayers.delete(k);
 }
 
 /**
@@ -135,6 +156,84 @@ export function clearAllForSession(sessionId: string): void {
       clearInterval(entry.intervalId);
       clearTimeout(entry.timeoutId);
       timers.delete(k);
+      readyPlayers.delete(k);
     }
   }
+}
+
+// ─── Skip Countdown ──────────────────────────────────────────────────────────
+
+/**
+ * Marks a player as ready (arrived in room OR pressed the READY button).
+ * When all players are ready the countdown is skipped immediately.
+ *
+ * Returns the current ready count (for broadcasting to clients).
+ * Returns 0 if no countdown is active for this room (no-op).
+ */
+export function markPlayerReady(
+  io: Server,
+  sessionId: string,
+  roomIndex: number,
+  playerId: string,
+  totalPlayers: number,
+): number {
+  const k = key(sessionId, roomIndex);
+
+  // No-op if no active countdown for this room
+  if (!timers.has(k)) return 0;
+
+  const readySet = readyPlayers.get(k);
+  if (!readySet) return 0;
+
+  readySet.add(playerId);
+  const readyCount = readySet.size;
+
+  // If all players are ready → skip
+  if (readyCount >= totalPlayers) {
+    skipCountdown(io, sessionId, roomIndex);
+  }
+
+  return readyCount;
+}
+
+/**
+ * Returns how many players are currently marked ready for a given room.
+ */
+export function getReadyCount(sessionId: string, roomIndex: number): number {
+  return readyPlayers.get(key(sessionId, roomIndex))?.size ?? 0;
+}
+
+/**
+ * Immediately skips a running countdown — cancels timers, emits SKIP_COUNTDOWN,
+ * and invokes the onExpire callback.
+ */
+function skipCountdown(io: Server, sessionId: string, roomIndex: number): void {
+  const k = key(sessionId, roomIndex);
+  const entry = timers.get(k);
+  if (!entry) return; // already expired or cancelled
+
+  // Cancel the running timers
+  clearInterval(entry.intervalId);
+  clearTimeout(entry.timeoutId);
+  timers.delete(k);
+  readyPlayers.delete(k);
+
+  // Notify all clients the countdown was skipped
+  io.to(sessionId).emit(SocketEvents.SKIP_COUNTDOWN, {
+    sessionId,
+    roomIndex,
+    message: "All agents present — activating now",
+  });
+
+  // Invoke the onExpire callback (same as natural expiry)
+  entry.onExpire(sessionId, roomIndex).catch((err) => {
+    console.error(
+      `[countdown] skipCountdown onExpire error session=${sessionId} room=${roomIndex}:`,
+      err,
+    );
+  });
+
+  console.log(
+    `[countdown] Skipped: session=${sessionId} room=${roomIndex} (all players ready)`,
+  );
 }

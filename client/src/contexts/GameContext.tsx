@@ -96,6 +96,10 @@ export interface GameState {
     }[];
   } | null;
   error: string | null;
+  /** How many players have voted/arrived to skip the countdown */
+  skipVotes: number;
+  /** Total players in the session (for skip vote tracker) */
+  totalPlayers: number;
 }
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
@@ -158,7 +162,9 @@ type GameAction =
   | { type: "SOCKET_DISCONNECTED" }
   | { type: "SOCKET_RECONNECTED" }
   | { type: "ERROR"; payload: string }
-  | { type: "RESET" };
+  | { type: "RESET" }
+  | { type: "SET_SKIP_VOTES"; skipVotes: number; totalPlayers: number }
+  | { type: "SET_COUNTDOWN"; seconds: null };
 
 const initialState: GameState = {
   loaded: false,
@@ -177,6 +183,8 @@ const initialState: GameState = {
   revealedHints: {},
   gameEndData: null,
   error: null,
+  skipVotes: 0,
+  totalPlayers: 0,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -247,7 +255,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
 
     case "TIMER_SYNC":
-      return { ...state, timer: action.payload };
+      return {
+        ...state,
+        timer: action.payload,
+        skipVotes: state.skipVotes,
+        totalPlayers: state.totalPlayers,
+      };
 
     case "PUZZLE_START":
       return {
@@ -255,6 +268,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         activePuzzleRoomIndex: action.payload.roomIndex,
         timer: null,
         revealedHints: {},
+        skipVotes: 0,
+        totalPlayers: 0,
         puzzles: state.puzzles.map((p, i) =>
           i === action.payload.roomIndex
             ? {
@@ -394,6 +409,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case "RESET":
       return initialState;
 
+    case "SET_SKIP_VOTES":
+      return {
+        ...state,
+        skipVotes: action.skipVotes,
+        totalPlayers: action.totalPlayers,
+      };
+
+    case "SET_COUNTDOWN":
+      return { ...state, timer: null, skipVotes: 0, totalPlayers: 0 };
+
     default:
       return state;
   }
@@ -416,6 +441,8 @@ interface GameContextValue {
   updateNotes: (notes: string) => void;
   /** Clear the answer result indicator */
   clearAnswerResult: () => void;
+  /** Signal ready to skip countdown */
+  signalReady: (roomIndex: number) => void;
 }
 
 const GameContext = createContext<GameContextValue | null>(null);
@@ -504,6 +531,22 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
     const onError = (data: { message: string }) =>
       dispatch({ type: "ERROR", payload: data.message });
 
+    const onSkipCountdown = () => {
+      dispatch({ type: "SET_COUNTDOWN", seconds: null });
+    };
+
+    const onPlayerReady = (data: {
+      playerId: string;
+      readyCount: number;
+      totalPlayers: number;
+    }) => {
+      dispatch({
+        type: "SET_SKIP_VOTES",
+        skipVotes: data.readyCount,
+        totalPlayers: data.totalPlayers,
+      });
+    };
+
     // Socket disconnect / reconnect handlers
     const onDisconnect = () => {
       dispatch({ type: "SOCKET_DISCONNECTED" });
@@ -530,6 +573,8 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
     socket.on(SocketEvents.TEAM_UPDATE, onTeamUpdate);
     socket.on(SocketEvents.GAME_END, onGameEnd);
     socket.on(SocketEvents.ERROR, onError);
+    socket.on(SocketEvents.SKIP_COUNTDOWN, onSkipCountdown);
+    socket.on(SocketEvents.PLAYER_READY, onPlayerReady);
     socket.on("disconnect", onDisconnect);
     socket.on("connect", onReconnect);
 
@@ -550,6 +595,8 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
       socket.off(SocketEvents.TEAM_UPDATE, onTeamUpdate);
       socket.off(SocketEvents.GAME_END, onGameEnd);
       socket.off(SocketEvents.ERROR, onError);
+      socket.off(SocketEvents.SKIP_COUNTDOWN, onSkipCountdown);
+      socket.off(SocketEvents.PLAYER_READY, onPlayerReady);
       socket.off("disconnect", onDisconnect);
       socket.off("connect", onReconnect);
 
@@ -609,6 +656,13 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
     dispatch({ type: "CLEAR_ANSWER_RESULT" });
   }, []);
 
+  const signalReady = useCallback(
+    (roomIndex: number) => {
+      socket.emit(SocketEvents.PLAYER_READY, { sessionId, roomIndex });
+    },
+    [sessionId],
+  );
+
   return (
     <GameContext.Provider
       value={{
@@ -619,6 +673,7 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
         sendChat,
         updateNotes,
         clearAnswerResult,
+        signalReady,
       }}
     >
       {children}

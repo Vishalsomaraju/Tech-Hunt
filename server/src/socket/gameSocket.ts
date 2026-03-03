@@ -39,6 +39,8 @@ import {
   cancelCountdown,
   isCountdownActive,
   clearAllForSession,
+  markPlayerReady,
+  getReadyCount,
 } from "./countdownManager.js";
 
 // ─── In-Memory Session Runtime ───────────────────────────────────────────────
@@ -610,6 +612,34 @@ export function registerGameEvents(io: Server, socket: Socket): void {
           });
         }
 
+        // 6. Mark this player as ready (arriving counts as ready for skip)
+        if (
+          !runtime.solvedRooms.has(roomIndex) &&
+          isCountdownActive(sessionId, roomIndex)
+        ) {
+          const { rows: memberCount } = await pool.query<{ count: string }>(
+            `SELECT count(*)::text AS count FROM team_members WHERE team_id = $1`,
+            [runtime.teamId],
+          );
+          const totalPlayers = parseInt(memberCount[0]?.count ?? "1", 10);
+          const readyCount = markPlayerReady(
+            io,
+            sessionId,
+            roomIndex,
+            user.userId,
+            totalPlayers,
+          );
+
+          // Broadcast ready count to all players
+          if (readyCount > 0) {
+            io.to(sessionId).emit(SocketEvents.PLAYER_READY, {
+              playerId: user.userId,
+              readyCount,
+              totalPlayers,
+            });
+          }
+        }
+
         console.log(
           `[socket] ${user.username} moved to room ${roomId} (idx=${roomIndex})`,
         );
@@ -943,6 +973,53 @@ export function registerGameEvents(io: Server, socket: Socket): void {
           message: "Failed to update notes",
           code: "NOTES_ERROR",
         });
+      }
+    },
+  );
+
+  // ────────────────────────────────────────────────────────────────────────
+  // EVENT: player_ready (PLAYER_READY)
+  // ────────────────────────────────────────────────────────────────────────
+  socket.on(
+    SocketEvents.PLAYER_READY,
+    async (data: { sessionId: string; roomIndex: number }) => {
+      try {
+        const user = userFromSocket(socket);
+        if (!user) return;
+
+        const { sessionId, roomIndex } = data;
+        const runtime = sessions.get(sessionId);
+        if (!runtime) return;
+
+        // Ignore if room is already solved
+        if (runtime.solvedRooms.has(roomIndex)) return;
+
+        // Ignore if no countdown is active (already expired or not started)
+        if (!isCountdownActive(sessionId, roomIndex)) return;
+
+        const { rows: memberCount } = await pool.query<{ count: string }>(
+          `SELECT count(*)::text AS count FROM team_members WHERE team_id = $1`,
+          [runtime.teamId],
+        );
+        const totalPlayers = parseInt(memberCount[0]?.count ?? "1", 10);
+        const readyCount = markPlayerReady(
+          io,
+          sessionId,
+          roomIndex,
+          user.userId,
+          totalPlayers,
+        );
+
+        // Broadcast ready count to all players
+        if (readyCount > 0) {
+          io.to(sessionId).emit(SocketEvents.PLAYER_READY, {
+            playerId: user.userId,
+            readyCount,
+            totalPlayers,
+          });
+        }
+      } catch (err) {
+        console.error("[socket] player_ready error:", err);
       }
     },
   );
