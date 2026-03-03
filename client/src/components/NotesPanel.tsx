@@ -61,12 +61,26 @@ export function NotesPanel() {
   );
 
   return (
-    <div className="glass-panel flex flex-col h-full">
+    <div
+      className="flex flex-col h-full"
+      style={{ background: "var(--bg-panel)" }}
+    >
       {/* Header */}
-      <div className="px-4 py-2 border-b border-[var(--color-border-default)]">
-        <h3 className="text-xs font-mono text-[var(--color-text-muted)] tracking-wider">
-          SHARED NOTES
-        </h3>
+      <div
+        className="font-mono shrink-0"
+        style={{
+          fontSize: "11px",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          padding: "10px 12px",
+          borderBottom: "1px solid var(--border)",
+          color: "var(--text-muted)",
+          height: "40px",
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        NOTES
       </div>
 
       {/* Textarea */}
@@ -74,8 +88,30 @@ export function NotesPanel() {
         value={localNotes}
         onChange={handleChange}
         placeholder="Jot down clues, patterns, ideas..."
-        className="flex-1 p-3 bg-transparent text-sm text-[var(--color-text-primary)] font-mono resize-none outline-none placeholder:text-[var(--color-text-muted)]/50 min-h-0"
+        className="input-base flex-1 min-h-0"
+        style={{
+          resize: "none",
+          fontSize: "13px",
+          lineHeight: 1.6,
+          padding: "14px",
+          borderRadius: 0,
+          border: "none",
+          fontFamily: "var(--font-sans)",
+        }}
       />
+
+      {/* Sync indicator */}
+      <div
+        className="shrink-0 font-mono"
+        style={{
+          fontSize: "10px",
+          color: "var(--text-dim)",
+          padding: "6px 12px",
+          borderTop: "1px solid var(--border)",
+        }}
+      >
+        synced
+      </div>
     </div>
   );
 }

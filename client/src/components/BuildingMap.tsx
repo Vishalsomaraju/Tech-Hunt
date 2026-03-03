@@ -7,17 +7,8 @@
 import { memo } from "react";
 import { useGame } from "../contexts/GameContext";
 import { useAuth } from "../contexts/AuthContext";
-import { RoomStatus, PuzzleType } from "@techhunt/shared";
+import { RoomStatus } from "@techhunt/shared";
 import type { GameRoom } from "../contexts/GameContext";
-
-// Puzzle‐type emoji / icon
-const puzzleIcons: Record<string, string> = {
-  [PuzzleType.BINARY]: "01",
-  [PuzzleType.HEX]: "0x",
-  [PuzzleType.OCTAL]: "0o",
-  [PuzzleType.ASCII]: "Az",
-  [PuzzleType.CODING]: "</>",
-};
 
 interface RoomTileProps {
   room: GameRoom;
@@ -39,50 +30,81 @@ const RoomTile = memo(function RoomTile({
   const isLocked = room.status === RoomStatus.LOCKED;
   const isUnlocked = room.status === RoomStatus.UNLOCKED;
 
+  const bgColor = isCurrentRoom
+    ? "#0E2A3A"
+    : isSolved
+      ? "#0A1F16"
+      : isUnlocked
+        ? "#0E2A3A"
+        : "#0D1E2C";
+
+  const borderColor = isCurrentRoom
+    ? "var(--accent-glow)"
+    : isSolved
+      ? "#065F46"
+      : isUnlocked
+        ? "var(--accent-dim)"
+        : "#1E3A4A";
+
+  const textColor = isCurrentRoom
+    ? "var(--accent)"
+    : isSolved
+      ? "var(--success)"
+      : isUnlocked
+        ? "var(--text-secondary)"
+        : "var(--text-dim)";
+
   return (
     <button
       onClick={onClick}
       disabled={isLocked}
-      className={`
-        relative flex flex-col items-center justify-center p-3 rounded-xl
-        border font-mono text-xs transition-all duration-200
-        ${
-          isCurrentRoom
-            ? "border-[var(--color-neon-cyan)] bg-[var(--color-neon-cyan)]/10 shadow-[var(--shadow-neon-cyan)]"
-            : isSolved
-              ? "border-[var(--color-neon-green)]/50 bg-[var(--color-neon-green)]/5"
-              : isUnlocked
-                ? "border-[var(--color-border-default)] bg-[var(--color-bg-surface)] hover:border-[var(--color-neon-cyan)]/50 cursor-pointer"
-                : "border-[var(--color-border-default)]/50 bg-[var(--color-bg-primary)] opacity-40 cursor-not-allowed"
-        }
-      `}
+      className={`relative flex flex-col items-center justify-center font-mono transition-all duration-200 ${
+        isCurrentRoom ? "animate-pulse-glow" : ""
+      }`}
+      style={{
+        width: "88px",
+        height: "40px",
+        borderRadius: "var(--radius-sm)",
+        border: `1px solid ${borderColor}`,
+        background: bgColor,
+        color: textColor,
+        fontSize: "11px",
+        textAlign: "center",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        padding: "0 8px",
+        cursor: isLocked ? "not-allowed" : "pointer",
+        opacity: isLocked ? 0.5 : 1,
+      }}
     >
       {/* Room label */}
-      <span className="text-[10px] text-[var(--color-text-muted)] mb-1">
-        R{index + 1}
+      <span
+        style={{
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          width: "100%",
+        }}
+      >
+        {isSolved ? "✓ " : ""}R{index + 1}
       </span>
-
-      {/* Icon / Status */}
-      {isSolved ? (
-        <span className="text-lg text-[var(--color-neon-green)]">✓</span>
-      ) : isLocked ? (
-        <span className="text-lg opacity-50">🔒</span>
-      ) : (
-        <span className="text-sm text-[var(--color-neon-cyan)]">
-          {puzzleIcons[room.puzzleType] ?? "?"}
-        </span>
-      )}
 
       {/* Players in room */}
       {playersHere.length > 0 && (
-        <div className="flex -space-x-1 mt-1">
+        <div className="absolute flex" style={{ bottom: "-10px", gap: "2px" }}>
           {playersHere.slice(0, 3).map((initials, i) => (
             <span
               key={i}
-              className="w-4 h-4 rounded-full bg-[var(--color-neon-purple)]/30 border border-[var(--color-neon-purple)]/50 text-[8px] flex items-center justify-center text-[var(--color-neon-purple)]"
-            >
-              {initials}
-            </span>
+              className="flex items-center justify-center"
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: "var(--accent)",
+                fontSize: "0",
+              }}
+              title={initials}
+            />
           ))}
         </div>
       )}
@@ -95,11 +117,30 @@ export const BuildingMap = memo(function BuildingMap() {
   const { user } = useAuth();
 
   return (
-    <div className="glass-panel p-4">
-      <h2 className="text-xs font-mono text-[var(--color-text-muted)] mb-3 tracking-wider">
+    <div
+      className="h-full"
+      style={{
+        background: "var(--bg-base)",
+        backgroundImage:
+          "linear-gradient(rgba(34,211,238,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.03) 1px, transparent 1px)",
+        backgroundSize: "40px 40px",
+        padding: "var(--space-lg)",
+        overflow: "auto",
+      }}
+    >
+      <h2
+        className="font-mono"
+        style={{
+          fontSize: "11px",
+          textTransform: "uppercase",
+          letterSpacing: "0.15em",
+          color: "var(--text-muted)",
+          marginBottom: "16px",
+        }}
+      >
         BUILDING MAP
       </h2>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5" style={{ gap: "10px" }}>
         {state.rooms.map((room, idx) => {
           const puzzle = state.puzzles[idx];
           const playersHere = state.players

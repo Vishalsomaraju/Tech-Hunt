@@ -16,8 +16,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="neon-text text-lg font-mono">AUTHENTICATING...</div>
+      <div
+        className="flex items-center justify-center min-h-screen"
+        style={{ background: "var(--bg-base)" }}
+      >
+        <div
+          className="glow-text font-mono animate-pulse-glow"
+          style={{ fontSize: "16px" }}
+        >
+          AUTHENTICATING...
+        </div>
       </div>
     );
   }

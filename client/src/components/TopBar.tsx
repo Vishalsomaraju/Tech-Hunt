@@ -21,50 +21,88 @@ export function TopBar() {
   };
 
   return (
-    <header className="flex items-center justify-between px-4 py-2 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border-default)] shrink-0">
-      {/* Left: Logo + Phase */}
-      <div className="flex items-center gap-4">
-        <h1
-          className="text-lg font-bold font-mono neon-text cursor-pointer"
+    <header
+      className="flex items-center justify-between shrink-0"
+      style={{
+        height: "52px",
+        background: "var(--bg-panel)",
+        borderBottom: "1px solid var(--border)",
+        padding: "0 20px",
+        gap: "20px",
+      }}
+    >
+      {/* Left: TH monogram */}
+      <div className="flex items-center" style={{ gap: "16px" }}>
+        <span
+          className="font-mono glow-text cursor-pointer"
+          style={{
+            fontSize: "15px",
+            fontWeight: 700,
+            color: "var(--accent)",
+            letterSpacing: "0.1em",
+          }}
           onClick={() => navigate("/")}
         >
-          TECH HUNT
-        </h1>
+          TH
+        </span>
         {state.session && (
-          <span className="text-xs font-mono px-2 py-1 rounded bg-[var(--color-neon-cyan)]/10 text-[var(--color-neon-cyan)] border border-[var(--color-neon-cyan)]/30">
+          <span
+            className="font-mono"
+            style={{ fontSize: "13px", color: "var(--text-secondary)" }}
+          >
+            <span style={{ color: "var(--accent)", marginRight: "4px" }}>
+              &gt;
+            </span>
             {phaseLabel[state.session.phase] ?? state.session.phase}
           </span>
         )}
       </div>
 
-      {/* Center: Team Score */}
-      <div className="text-center">
-        <p className="text-xs text-[var(--color-text-muted)] font-mono">
-          TEAM SCORE
-        </p>
-        <p className="text-xl font-bold font-mono text-[var(--color-neon-cyan)]">
-          {state.teamScore}
-        </p>
-      </div>
+      {/* Right: Score + Player avatars */}
+      <div className="flex items-center" style={{ gap: "20px" }}>
+        {/* Score */}
+        <span
+          className="font-mono"
+          style={{ fontSize: "13px", color: "var(--accent)" }}
+        >
+          ⬡ {state.teamScore}
+        </span>
 
-      {/* Right: Player avatars */}
-      <div className="flex items-center gap-2">
-        <div className="flex -space-x-2">
-          {state.players.slice(0, 5).map((p) => (
+        {/* Player avatar stack */}
+        <div className="flex" style={{ marginLeft: "4px" }}>
+          {state.players.slice(0, 5).map((p, i) => (
             <div
               key={p.id}
-              className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
-                p.id === user?.id
-                  ? "border-[var(--color-neon-cyan)] bg-[var(--color-neon-cyan)]/20 text-[var(--color-neon-cyan)]"
-                  : "border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]"
-              }`}
+              className="flex items-center justify-center font-mono"
+              style={{
+                width: "28px",
+                height: "28px",
+                borderRadius: "50%",
+                background:
+                  p.id === user?.id
+                    ? "rgba(34,211,238,0.15)"
+                    : "var(--bg-elevated)",
+                border:
+                  p.id === user?.id
+                    ? "1px solid var(--accent)"
+                    : "1px solid var(--border-accent)",
+                fontSize: "11px",
+                color:
+                  p.id === user?.id ? "var(--accent)" : "var(--text-secondary)",
+                marginLeft: i > 0 ? "-8px" : "0",
+                zIndex: 5 - i,
+                position: "relative",
+              }}
               title={p.username}
             >
               {p.username[0]?.toUpperCase()}
             </div>
           ))}
         </div>
-        <span className="text-xs text-[var(--color-text-muted)] font-mono ml-1">
+        <span
+          className="font-mono"
+          style={{ fontSize: "11px", color: "var(--text-dim)" }}
+        >
           {state.players.length}P
         </span>
       </div>

@@ -105,22 +105,46 @@ export function AuthPage() {
   ];
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold neon-text font-mono tracking-widest">
-            TECH HUNT
-          </h1>
-          <p className="text-[var(--color-text-muted)] mt-2 text-sm">
+    <div
+      className="flex items-center justify-center min-h-screen p-4"
+      style={{ background: "var(--bg-base)" }}
+    >
+      <div className="w-full" style={{ maxWidth: "440px" }}>
+        {/* Card */}
+        <div className="panel border-glow" style={{ padding: "40px" }}>
+          {/* Logo */}
+          <div className="text-center" style={{ marginBottom: "6px" }}>
+            <h1
+              className="font-mono glow-text"
+              style={{
+                fontSize: "36px",
+                letterSpacing: "0.2em",
+                color: "var(--accent)",
+              }}
+            >
+              TECH HUNT
+            </h1>
+          </div>
+          <p
+            className="text-center"
+            style={{
+              fontSize: "13px",
+              color: "var(--text-muted)",
+              marginBottom: "32px",
+            }}
+          >
             The building is waiting.
           </p>
-        </div>
 
-        {/* Card */}
-        <div className="glass-panel p-6">
           {/* Tabs */}
-          <div className="flex border-b border-[var(--color-border-default)] mb-6">
+          <div
+            className="flex"
+            style={{
+              background: "var(--bg-elevated)",
+              borderRadius: "var(--radius-sm) var(--radius-sm) 0 0",
+              marginBottom: "24px",
+            }}
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.key}
@@ -128,11 +152,24 @@ export function AuthPage() {
                   setActiveTab(tab.key);
                   setError("");
                 }}
-                className={`flex-1 pb-3 text-sm font-medium transition-colors ${
-                  activeTab === tab.key
-                    ? "text-[var(--color-neon-cyan)] border-b-2 border-[var(--color-neon-cyan)]"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                }`}
+                className="flex-1 transition-colors"
+                style={{
+                  padding: "10px 20px",
+                  fontSize: "13px",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  letterSpacing: "0.05em",
+                  background: "transparent",
+                  border: "none",
+                  borderBottom:
+                    activeTab === tab.key
+                      ? "2px solid var(--accent)"
+                      : "2px solid transparent",
+                  color:
+                    activeTab === tab.key
+                      ? "var(--text-primary)"
+                      : "var(--text-dim)",
+                  cursor: "pointer",
+                }}
               >
                 {tab.label}
               </button>
@@ -141,16 +178,39 @@ export function AuthPage() {
 
           {/* Error */}
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 text-[var(--color-error)] text-sm">
+            <div
+              style={{
+                fontSize: "13px",
+                color: "var(--danger)",
+                marginBottom: "16px",
+                padding: "10px 14px",
+                background: "rgba(248,113,113,0.08)",
+                border: "1px solid var(--danger-dim)",
+                borderRadius: "var(--radius-sm)",
+              }}
+            >
               {error}
             </div>
           )}
 
           {/* Login Tab */}
           {activeTab === "login" && (
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form
+              onSubmit={handleLogin}
+              className="flex flex-col"
+              style={{ gap: "20px" }}
+            >
               <div>
-                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+                <label
+                  className="block font-mono"
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
+                    marginBottom: "6px",
+                  }}
+                >
                   Email
                 </label>
                 <input
@@ -158,12 +218,21 @@ export function AuthPage() {
                   required
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
-                  className="input-field font-mono"
+                  className="input-base"
                   placeholder="agent@techhunt.io"
                 />
               </div>
               <div>
-                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+                <label
+                  className="block font-mono"
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
+                    marginBottom: "6px",
+                  }}
+                >
                   Password
                 </label>
                 <input
@@ -171,7 +240,7 @@ export function AuthPage() {
                   required
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  className="input-field font-mono"
+                  className="input-base"
                   placeholder="••••••••"
                 />
               </div>
@@ -179,6 +248,7 @@ export function AuthPage() {
                 type="submit"
                 disabled={isSubmitting}
                 className="btn-primary"
+                style={{ padding: "14px", fontSize: "13px", marginTop: "8px" }}
               >
                 {isSubmitting ? "Authenticating..." : "Access System"}
               </button>
@@ -187,9 +257,22 @@ export function AuthPage() {
 
           {/* Register Tab */}
           {activeTab === "register" && (
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form
+              onSubmit={handleRegister}
+              className="flex flex-col"
+              style={{ gap: "20px" }}
+            >
               <div>
-                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+                <label
+                  className="block font-mono"
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
+                    marginBottom: "6px",
+                  }}
+                >
                   Username
                 </label>
                 <input
@@ -197,17 +280,32 @@ export function AuthPage() {
                   required
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value)}
-                  className="input-field font-mono"
+                  className="input-base"
                   placeholder="agent_smith"
                   minLength={3}
                   maxLength={32}
                 />
-                <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                <p
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--text-dim)",
+                    marginTop: "4px",
+                  }}
+                >
                   3–32 chars, alphanumeric + underscore
                 </p>
               </div>
               <div>
-                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+                <label
+                  className="block font-mono"
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
+                    marginBottom: "6px",
+                  }}
+                >
                   Email
                 </label>
                 <input
@@ -215,12 +313,21 @@ export function AuthPage() {
                   required
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
-                  className="input-field font-mono"
+                  className="input-base"
                   placeholder="agent@techhunt.io"
                 />
               </div>
               <div>
-                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+                <label
+                  className="block font-mono"
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
+                    marginBottom: "6px",
+                  }}
+                >
                   Password
                 </label>
                 <input
@@ -228,13 +335,22 @@ export function AuthPage() {
                   required
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  className="input-field font-mono"
+                  className="input-base"
                   placeholder="••••••••"
                   minLength={8}
                 />
               </div>
               <div>
-                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+                <label
+                  className="block font-mono"
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
+                    marginBottom: "6px",
+                  }}
+                >
                   Confirm Password
                 </label>
                 <input
@@ -242,7 +358,7 @@ export function AuthPage() {
                   required
                   value={regConfirm}
                   onChange={(e) => setRegConfirm(e.target.value)}
-                  className="input-field font-mono"
+                  className="input-base"
                   placeholder="••••••••"
                 />
               </div>
@@ -250,6 +366,7 @@ export function AuthPage() {
                 type="submit"
                 disabled={isSubmitting}
                 className="btn-primary"
+                style={{ padding: "14px", fontSize: "13px", marginTop: "8px" }}
               >
                 {isSubmitting ? "Creating Profile..." : "Create Agent Profile"}
               </button>
@@ -258,9 +375,22 @@ export function AuthPage() {
 
           {/* Guest Tab */}
           {activeTab === "guest" && (
-            <form onSubmit={handleGuest} className="space-y-4">
+            <form
+              onSubmit={handleGuest}
+              className="flex flex-col"
+              style={{ gap: "20px" }}
+            >
               <div>
-                <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
+                <label
+                  className="block font-mono"
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
+                    marginBottom: "6px",
+                  }}
+                >
                   Enter callsign
                 </label>
                 <input
@@ -268,16 +398,20 @@ export function AuthPage() {
                   required
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
-                  className="input-field font-mono"
+                  className="input-base"
                   placeholder="GHOST_42"
                   minLength={2}
                   maxLength={20}
                 />
               </div>
-              <p className="text-xs text-[var(--color-text-muted)]">
+              <p style={{ fontSize: "12px", color: "var(--text-dim)" }}>
                 Guests cannot appear on the leaderboard or resume sessions.
               </p>
-              <button type="submit" className="btn-primary">
+              <button
+                type="submit"
+                className="btn-primary"
+                style={{ padding: "14px", fontSize: "13px", marginTop: "8px" }}
+              >
                 Enter as Guest
               </button>
             </form>

@@ -44,28 +44,74 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-primary)] p-4">
-          <div className="glass-panel p-8 max-w-lg w-full text-center space-y-6">
-            <div className="text-5xl">⚠️</div>
-            <h1 className="text-2xl font-mono neon-text">SYSTEM MALFUNCTION</h1>
-            <p className="text-sm text-[var(--color-text-muted)] font-mono">
+        <div
+          className="min-h-screen flex items-center justify-center"
+          style={{ background: "var(--bg-base)", padding: "var(--space-md)" }}
+        >
+          <div
+            className="panel border-glow text-center"
+            style={{ maxWidth: "480px", width: "100%", padding: "32px" }}
+          >
+            <div style={{ fontSize: "40px", marginBottom: "16px" }}>⚠️</div>
+            <h1
+              className="font-mono glow-text"
+              style={{
+                fontSize: "22px",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                marginBottom: "12px",
+              }}
+            >
+              SYSTEM MALFUNCTION
+            </h1>
+            <p
+              className="font-mono"
+              style={{
+                fontSize: "13px",
+                color: "var(--text-muted)",
+                marginBottom: "20px",
+              }}
+            >
               Something went wrong. The error has been logged.
             </p>
             {!import.meta.env.PROD && this.state.error && (
-              <pre className="text-xs text-left text-[var(--color-error)] bg-[var(--color-bg-surface)] p-3 rounded-lg overflow-auto max-h-40 font-mono">
+              <pre
+                className="font-mono"
+                style={{
+                  fontSize: "11px",
+                  textAlign: "left",
+                  color: "var(--danger)",
+                  background: "var(--bg-elevated)",
+                  padding: "12px",
+                  borderRadius: "var(--radius-sm)",
+                  overflow: "auto",
+                  maxHeight: "160px",
+                  marginBottom: "20px",
+                }}
+              >
                 {this.state.error.message}
               </pre>
             )}
-            <div className="flex gap-3 justify-center">
+            <div className="flex justify-center" style={{ gap: "12px" }}>
               <button
                 onClick={this.handleReload}
-                className="btn-primary font-mono text-sm"
+                className="btn-primary font-mono"
+                style={{
+                  width: "auto",
+                  padding: "10px 20px",
+                  fontSize: "12px",
+                }}
               >
                 RELOAD
               </button>
               <button
                 onClick={this.handleGoHome}
-                className="btn-secondary font-mono text-sm"
+                className="btn-secondary font-mono"
+                style={{
+                  width: "auto",
+                  padding: "10px 20px",
+                  fontSize: "12px",
+                }}
               >
                 BACK TO HQ
               </button>

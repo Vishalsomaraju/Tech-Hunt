@@ -17,8 +17,16 @@ export function RegisteredRoute({ children }: RegisteredRouteProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="neon-text text-lg font-mono">AUTHENTICATING...</div>
+      <div
+        className="flex items-center justify-center min-h-screen"
+        style={{ background: "var(--bg-base)" }}
+      >
+        <div
+          className="glow-text font-mono animate-pulse-glow"
+          style={{ fontSize: "16px" }}
+        >
+          AUTHENTICATING...
+        </div>
       </div>
     );
   }
@@ -31,25 +39,66 @@ export function RegisteredRoute({ children }: RegisteredRouteProps) {
   // Logged in as guest → show soft gate
   if (isGuest) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="glass-panel p-8 max-w-md w-full text-center space-y-6">
-          <div className="text-4xl">🔒</div>
-          <h2 className="text-xl font-mono neon-text">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--bg-base)", padding: "var(--space-md)" }}
+      >
+        <div
+          className="panel border-glow text-center"
+          style={{ maxWidth: "440px", width: "100%", padding: "32px" }}
+        >
+          <div style={{ fontSize: "36px", marginBottom: "16px" }}>🔒</div>
+          <h2
+            className="font-mono glow-text"
+            style={{
+              fontSize: "18px",
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+              marginBottom: "12px",
+            }}
+          >
             REGISTERED AGENTS ONLY
           </h2>
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            style={{
+              fontSize: "13px",
+              color: "var(--text-muted)",
+              marginBottom: "24px",
+              lineHeight: 1.6,
+              fontFamily: "var(--font-sans)",
+            }}
+          >
             The leaderboard is available to registered users. Create an account
             to track your scores and compete with other teams.
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex justify-center" style={{ gap: "12px" }}>
             <Link
               to="/auth"
               state={{ from: location.pathname }}
-              className="btn-primary font-mono text-sm"
+              className="btn-primary font-mono"
+              style={{
+                width: "auto",
+                padding: "10px 20px",
+                fontSize: "12px",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+              }}
             >
               LOGIN / REGISTER
             </Link>
-            <Link to="/" className="btn-secondary font-mono text-sm">
+            <Link
+              to="/"
+              className="btn-secondary font-mono"
+              style={{
+                width: "auto",
+                padding: "10px 20px",
+                fontSize: "12px",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+              }}
+            >
               BACK TO HQ
             </Link>
           </div>

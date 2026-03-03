@@ -8,15 +8,36 @@ export function NotFoundPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ background: "var(--bg-base)", padding: "var(--space-xl)" }}
+    >
       <div className="text-center animate-fade-in">
-        <h1 className="text-7xl font-mono font-bold gradient-text mb-4">404</h1>
-        <p className="text-lg text-[var(--color-text-muted)] font-mono mb-8">
+        <h1
+          className="font-mono gradient-text"
+          style={{ fontSize: "72px", fontWeight: 700, marginBottom: "16px" }}
+        >
+          404
+        </h1>
+        <p
+          className="font-mono"
+          style={{
+            fontSize: "15px",
+            color: "var(--text-muted)",
+            marginBottom: "32px",
+          }}
+        >
           This room doesn't exist in the building.
         </p>
         <button
           onClick={() => navigate("/")}
-          className="btn-primary !w-auto !px-8 font-mono tracking-wider"
+          className="btn-primary font-mono"
+          style={{
+            width: "auto",
+            padding: "12px 32px",
+            fontSize: "13px",
+            letterSpacing: "0.15em",
+          }}
         >
           RETURN TO BASE
         </button>

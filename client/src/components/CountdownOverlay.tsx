@@ -18,50 +18,90 @@ export function CountdownOverlay() {
   const circumference = 2 * Math.PI * 54; // r=54
   const strokeDash = (pct / 100) * circumference;
 
+  const isWarning = timer.remaining <= 20;
+  const isDanger = timer.remaining <= 10;
+  const timerColor = isDanger
+    ? "var(--danger)"
+    : isWarning
+      ? "var(--warning)"
+      : "var(--accent)";
+
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-[var(--color-bg-primary)]/90 backdrop-blur-sm">
-      <div className="text-center animate-fade-in">
-        <p className="text-xs font-mono text-[var(--color-text-muted)] mb-4 tracking-widest">
+    <div
+      className="absolute inset-0 z-40 flex items-center justify-center"
+      style={{
+        background: "rgba(8, 15, 26, 0.88)",
+        backdropFilter: "blur(4px)",
+      }}
+    >
+      <div
+        className="text-center animate-fade-in"
+        style={{ maxWidth: "400px", width: "100%", padding: "var(--space-xl)" }}
+      >
+        <p
+          className="font-mono"
+          style={{
+            fontSize: "11px",
+            color: "var(--text-muted)",
+            textTransform: "uppercase",
+            letterSpacing: "0.2em",
+            marginBottom: "var(--space-lg)",
+          }}
+        >
           ENTERING ROOM
         </p>
 
         {/* Circular timer */}
-        <div className="relative w-32 h-32 mx-auto mb-4">
+        <div
+          className="relative mx-auto"
+          style={{
+            width: "160px",
+            height: "160px",
+            marginBottom: "var(--space-lg)",
+          }}
+        >
           <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-            {/* Background ring */}
             <circle
               cx="60"
               cy="60"
               r="54"
               fill="none"
-              stroke="var(--color-border-default)"
-              strokeWidth="4"
+              stroke="var(--border)"
+              strokeWidth="3"
             />
-            {/* Progress ring */}
             <circle
               cx="60"
               cy="60"
               r="54"
               fill="none"
-              stroke="var(--color-neon-cyan)"
-              strokeWidth="4"
+              stroke={timerColor}
+              strokeWidth="3"
               strokeLinecap="round"
               strokeDasharray={`${strokeDash} ${circumference}`}
               className="transition-all duration-1000 ease-linear"
-              style={{
-                filter: "drop-shadow(0 0 6px rgba(0,240,255,0.5))",
-              }}
+              style={{ filter: `drop-shadow(0 0 8px ${timerColor})` }}
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl font-mono font-bold neon-text">
+            <span
+              className={`font-mono ${isDanger ? "glow-text" : ""}`}
+              style={{
+                fontSize: "96px",
+                fontWeight: 700,
+                color: timerColor,
+                lineHeight: 1,
+              }}
+            >
               {timer.remaining}
             </span>
           </div>
         </div>
 
-        <p className="text-sm text-[var(--color-text-secondary)] font-mono">
-          Puzzle activates soon...
+        <p
+          className="font-mono"
+          style={{ fontSize: "13px", color: "var(--text-dim)" }}
+        >
+          Puzzle activates soon…
         </p>
       </div>
     </div>

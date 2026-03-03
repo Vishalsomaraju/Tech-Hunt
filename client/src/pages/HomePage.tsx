@@ -109,30 +109,71 @@ export function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border-default)]">
-        <h1 className="text-xl font-bold neon-text font-mono tracking-wider">
+      <header
+        className="flex items-center justify-between shrink-0"
+        style={{
+          height: "56px",
+          padding: "0 var(--space-lg)",
+          borderBottom: "1px solid var(--border)",
+          background: "var(--bg-panel)",
+        }}
+      >
+        <h1
+          className="font-mono glow-text"
+          style={{
+            fontSize: "18px",
+            letterSpacing: "0.15em",
+            color: "var(--accent)",
+          }}
+        >
           TECH HUNT
         </h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center" style={{ gap: "16px" }}>
           <button
             onClick={() => setShowHowToPlay(true)}
-            className="w-7 h-7 rounded-full border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-[var(--color-neon-cyan)] hover:border-[var(--color-neon-cyan)]/50 transition-colors text-sm font-mono"
+            className="flex items-center justify-center transition-colors"
+            style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              border: "1px solid var(--border)",
+              color: "var(--text-dim)",
+              background: "transparent",
+              fontSize: "13px",
+              fontFamily: "'JetBrains Mono', monospace",
+              cursor: "pointer",
+            }}
             title="How to Play"
           >
             ?
           </button>
           <Link
             to="/leaderboard"
-            className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-neon-cyan)] transition-colors"
+            className="font-mono transition-colors"
+            style={{
+              fontSize: "12px",
+              color: "var(--text-muted)",
+              letterSpacing: "0.05em",
+            }}
           >
             LEADERBOARD
           </Link>
-          <span className="text-sm text-[var(--color-text-secondary)] font-mono">
+          <span
+            className="font-mono"
+            style={{ fontSize: "13px", color: "var(--text-secondary)" }}
+          >
             {displayName}
           </span>
           <button
             onClick={logout}
-            className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors"
+            className="font-mono transition-colors"
+            style={{
+              fontSize: "12px",
+              color: "var(--text-dim)",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+            }}
           >
             Logout
           </button>
@@ -140,44 +181,103 @@ export function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8">
+      <main
+        className="flex-1 flex items-center justify-center"
+        style={{ padding: "var(--space-xl) var(--space-lg)" }}
+      >
+        <div
+          className="w-full grid grid-cols-1 md:grid-cols-2"
+          style={{ maxWidth: "var(--max-width-content)", gap: "32px" }}
+        >
           {/* LEFT — Create Game */}
-          <div className="glass-panel p-6 space-y-6">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+          <div className="panel border-glow" style={{ padding: "32px" }}>
+            <h2
+              className="font-mono"
+              style={{
+                fontSize: "11px",
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+                color: "var(--text-muted)",
+                marginBottom: "24px",
+              }}
+            >
               Create Game
             </h2>
 
             {/* Mode Selection */}
-            <div>
-              <label className="block text-sm text-[var(--color-text-muted)] mb-3">
+            <div style={{ marginBottom: "24px" }}>
+              <label
+                className="block font-mono"
+                style={{
+                  fontSize: "11px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.15em",
+                  color: "var(--text-muted)",
+                  marginBottom: "12px",
+                }}
+              >
                 MODE
               </label>
-              <div className="space-y-2">
+              <div className="flex flex-col" style={{ gap: "12px" }}>
                 {MODES.map((m) => (
                   <button
                     key={m.key}
                     disabled={m.disabled}
                     onClick={() => !m.disabled && setMode(m.key)}
-                    className={`w-full text-left p-3 rounded-lg border transition-all ${
-                      m.disabled
-                        ? "opacity-40 cursor-not-allowed border-[var(--color-border-default)]"
+                    className="w-full text-left transition-all"
+                    style={{
+                      padding: "20px",
+                      borderRadius: "var(--radius-md)",
+                      border: m.disabled
+                        ? "1px solid var(--border)"
                         : mode === m.key
-                          ? "border-[var(--color-neon-cyan)] bg-[var(--color-neon-cyan)]/5"
-                          : "border-[var(--color-border-default)] hover:border-[var(--color-text-muted)]"
-                    }`}
+                          ? "1px solid var(--accent)"
+                          : "1px solid var(--border)",
+                      background: m.disabled
+                        ? "var(--bg-elevated)"
+                        : mode === m.key
+                          ? "rgba(34,211,238,0.05)"
+                          : "var(--bg-elevated)",
+                      boxShadow:
+                        !m.disabled && mode === m.key
+                          ? "var(--glow-sm)"
+                          : "none",
+                      opacity: m.disabled ? 0.4 : 1,
+                      cursor: m.disabled ? "not-allowed" : "pointer",
+                    }}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-sm font-semibold">
+                      <span
+                        className="font-mono"
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 600,
+                          color: "var(--text-primary)",
+                        }}
+                      >
                         {m.label}
                       </span>
                       {m.disabled && (
-                        <span className="text-xs px-2 py-0.5 rounded bg-[var(--color-warning)]/20 text-[var(--color-warning)]">
+                        <span
+                          style={{
+                            fontSize: "10px",
+                            background: "var(--bg-elevated)",
+                            color: "var(--text-dim)",
+                            padding: "2px 8px",
+                            borderRadius: "99px",
+                          }}
+                        >
                           Coming soon
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--text-muted)",
+                        marginTop: "4px",
+                      }}
+                    >
                       {m.desc}
                     </p>
                   </button>
@@ -186,25 +286,59 @@ export function HomePage() {
             </div>
 
             {/* Difficulty Selection */}
-            <div>
-              <label className="block text-sm text-[var(--color-text-muted)] mb-3">
+            <div style={{ marginBottom: "24px" }}>
+              <label
+                className="block font-mono"
+                style={{
+                  fontSize: "11px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.15em",
+                  color: "var(--text-muted)",
+                  marginBottom: "12px",
+                }}
+              >
                 DIFFICULTY
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3" style={{ gap: "12px" }}>
                 {DIFFICULTIES.map((d) => (
                   <button
                     key={d.key}
                     onClick={() => setDifficulty(d.key)}
-                    className={`p-3 rounded-lg border text-center transition-all ${
-                      difficulty === d.key
-                        ? "border-[var(--color-neon-cyan)] bg-[var(--color-neon-cyan)]/5"
-                        : "border-[var(--color-border-default)] hover:border-[var(--color-text-muted)]"
-                    }`}
+                    className="text-center transition-all"
+                    style={{
+                      padding: "20px",
+                      borderRadius: "var(--radius-md)",
+                      border:
+                        difficulty === d.key
+                          ? "1px solid var(--accent)"
+                          : "1px solid var(--border)",
+                      background:
+                        difficulty === d.key
+                          ? "rgba(34,211,238,0.05)"
+                          : "var(--bg-elevated)",
+                      boxShadow:
+                        difficulty === d.key ? "var(--glow-sm)" : "none",
+                      cursor: "pointer",
+                    }}
                   >
-                    <span className="font-mono text-sm font-semibold block">
+                    <span
+                      className="font-mono block"
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        color: "var(--text-primary)",
+                      }}
+                    >
                       {d.label}
                     </span>
-                    <span className="text-xs text-[var(--color-text-muted)] mt-1 block">
+                    <span
+                      className="block"
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--text-muted)",
+                        marginTop: "4px",
+                      }}
+                    >
                       {d.desc}
                     </span>
                   </button>
@@ -213,46 +347,90 @@ export function HomePage() {
             </div>
 
             {createError && (
-              <p className="text-sm text-[var(--color-error)]">{createError}</p>
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "var(--danger)",
+                  marginBottom: "12px",
+                }}
+              >
+                {createError}
+              </p>
             )}
 
             <button
               onClick={handleCreate}
               disabled={isCreating}
-              className="btn-primary font-mono tracking-wider"
+              className="btn-primary font-mono"
+              style={{ marginTop: "4px" }}
             >
               {isCreating ? "INITIALISING..." : "INITIALISE BUILDING"}
             </button>
           </div>
 
           {/* RIGHT — Join Game */}
-          <div className="glass-panel p-6 space-y-6 flex flex-col">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
+          <div
+            className="panel border-glow flex flex-col"
+            style={{ padding: "32px" }}
+          >
+            <h2
+              className="font-mono"
+              style={{
+                fontSize: "11px",
+                textTransform: "uppercase",
+                letterSpacing: "0.15em",
+                color: "var(--text-muted)",
+                marginBottom: "24px",
+              }}
+            >
               Join Game
             </h2>
-            <p className="text-sm text-[var(--color-text-muted)]">
+            <p
+              style={{
+                fontSize: "13px",
+                color: "var(--text-muted)",
+                marginBottom: "24px",
+              }}
+            >
               Enter the 6-character invite code from the host.
             </p>
-            <div className="flex-1 flex flex-col justify-center space-y-4">
+            <div
+              className="flex-1 flex flex-col justify-center"
+              style={{ gap: "16px" }}
+            >
               <input
                 type="text"
                 value={inviteCode}
                 onChange={(e) =>
                   setInviteCode(e.target.value.toUpperCase().slice(0, 6))
                 }
-                className="input-field font-mono text-center text-2xl tracking-[0.3em] uppercase"
+                className="input-base"
                 placeholder="ABC123"
                 maxLength={6}
+                style={{
+                  fontSize: "20px",
+                  textAlign: "center",
+                  letterSpacing: "0.3em",
+                  textTransform: "uppercase",
+                  height: "52px",
+                }}
               />
               {joinError && (
-                <p className="text-sm text-[var(--color-error)] text-center">
+                <p
+                  style={{
+                    fontSize: "13px",
+                    color: "var(--danger)",
+                    textAlign: "center",
+                  }}
+                >
                   {joinError}
                 </p>
               )}
               <button
                 onClick={handleJoin}
                 disabled={isJoining || inviteCode.length < 6}
-                className="btn-primary font-mono tracking-wider"
+                className="btn-primary font-mono"
+                style={{ marginTop: "0" }}
               >
                 {isJoining ? "CONNECTING..." : "JOIN BUILDING"}
               </button>

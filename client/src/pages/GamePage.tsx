@@ -36,8 +36,14 @@ function GameLayout() {
 
   if (!state.loaded) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="neon-text text-lg font-mono animate-pulse-glow">
+      <div
+        className="flex items-center justify-center min-h-screen"
+        style={{ background: "var(--bg-base)" }}
+      >
+        <div
+          className="font-mono glow-text animate-pulse-glow"
+          style={{ fontSize: "16px", color: "var(--accent)" }}
+        >
           SYNCING GAME STATE...
         </div>
       </div>
@@ -50,19 +56,63 @@ function GameLayout() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div
+      className="h-screen flex flex-col"
+      style={{ background: "var(--bg-base)" }}
+    >
       <TopBar />
 
       {/* Disconnect overlay */}
       {state.disconnected && (
-        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center">
-          <div className="glass-panel p-8 max-w-sm text-center space-y-4">
-            <div className="text-4xl animate-pulse">📡</div>
-            <h2 className="text-lg font-mono neon-text">CONNECTION LOST</h2>
-            <p className="text-sm text-[var(--color-text-muted)] font-mono">
+        <div
+          className="fixed inset-0 flex items-center justify-center"
+          style={{
+            zIndex: 100,
+            background: "rgba(8,15,26,0.85)",
+            backdropFilter: "blur(4px)",
+          }}
+        >
+          <div
+            className="panel border-glow text-center"
+            style={{ padding: "32px", maxWidth: "360px" }}
+          >
+            <div
+              style={{ fontSize: "40px", marginBottom: "16px" }}
+              className="animate-pulse"
+            >
+              📡
+            </div>
+            <h2
+              className="font-mono glow-text"
+              style={{
+                fontSize: "16px",
+                color: "var(--accent)",
+                marginBottom: "8px",
+              }}
+            >
+              CONNECTION LOST
+            </h2>
+            <p
+              className="font-mono"
+              style={{
+                fontSize: "13px",
+                color: "var(--text-dim)",
+                marginBottom: "16px",
+              }}
+            >
               Attempting to reconnect...
             </p>
-            <div className="w-8 h-8 border-2 border-[var(--color-neon-cyan)] border-t-transparent rounded-full animate-spin mx-auto" />
+            <div
+              style={{
+                width: "28px",
+                height: "28px",
+                border: "2px solid var(--accent)",
+                borderTopColor: "transparent",
+                borderRadius: "50%",
+                margin: "0 auto",
+              }}
+              className="animate-spin"
+            />
           </div>
         </div>
       )}
@@ -71,25 +121,49 @@ function GameLayout() {
         {/* Countdown overlay */}
         <CountdownOverlay />
 
-        {/* Main content grid */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 overflow-y-auto">
-          {/* Left column: Map + Puzzle */}
-          <div className="lg:col-span-2 space-y-4 flex flex-col">
-            <BuildingMap />
-            <div className="flex-1 min-h-[200px]">
-              <PuzzlePanel />
-            </div>
+        {/* Side panel: Chat + Notes */}
+        <div
+          className="flex flex-col shrink-0 hidden lg:flex"
+          style={{
+            width: "260px",
+            background: "var(--bg-panel)",
+            borderRight: "1px solid var(--border)",
+          }}
+        >
+          <div className="flex-1 min-h-0">
+            <ChatPanel />
           </div>
+          <div
+            style={{ height: "200px", borderTop: "1px solid var(--border)" }}
+          >
+            <NotesPanel />
+          </div>
+        </div>
 
-          {/* Right column: Chat + Notes */}
-          <div className="flex flex-col gap-4 min-h-0">
-            <div className="flex-1 min-h-[200px]">
-              <ChatPanel />
-            </div>
-            <div className="flex-1 min-h-[150px]">
-              <NotesPanel />
-            </div>
+        {/* Main content: Map + Puzzle */}
+        <div
+          className="flex-1 flex flex-col overflow-y-auto"
+          style={{ gap: "0" }}
+        >
+          <div className="flex-1 min-h-[300px]">
+            <BuildingMap />
           </div>
+          <div>
+            <PuzzlePanel />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: Chat + Notes below on small screens */}
+      <div
+        className="lg:hidden flex flex-col"
+        style={{ borderTop: "1px solid var(--border)" }}
+      >
+        <div style={{ height: "250px" }}>
+          <ChatPanel />
+        </div>
+        <div style={{ height: "150px", borderTop: "1px solid var(--border)" }}>
+          <NotesPanel />
         </div>
       </div>
     </div>

@@ -48,76 +48,190 @@ export function LeaderboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const medalColors = ["text-yellow-400", "text-gray-300", "text-orange-400"];
+  const rankBorders = [
+    "var(--warning)", // gold
+    "#94A3B8", // silver
+    "#D97706", // bronze
+  ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center p-6">
-      <div className="w-full max-w-2xl">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold font-mono neon-text tracking-wider">
+    <div
+      className="page-container min-h-screen"
+      style={{
+        paddingTop: "var(--space-2xl)",
+        paddingBottom: "var(--space-2xl)",
+      }}
+    >
+      <div className="w-full mx-auto" style={{ maxWidth: "900px" }}>
+        {/* Header */}
+        <div
+          className="flex items-center justify-between"
+          style={{ marginBottom: "var(--space-xl)" }}
+        >
+          <h1
+            className="font-mono glow-text"
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+            }}
+          >
             LEADERBOARD
           </h1>
           <button
             onClick={() => navigate("/")}
-            className="btn-secondary !w-auto !px-4 text-sm font-mono"
+            className="btn-secondary font-mono"
+            style={{ width: "auto", padding: "8px 16px", fontSize: "12px" }}
           >
             ← BACK
           </button>
         </div>
 
+        {/* Loading skeleton */}
         {loading && (
-          <div className="text-center py-16">
-            <p className="neon-text font-mono animate-pulse-glow">LOADING...</p>
+          <div
+            className="panel border-glow"
+            style={{ padding: 0, overflow: "hidden" }}
+          >
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "16px 20px",
+                  borderBottom: i < 4 ? "1px solid var(--border)" : "none",
+                }}
+              >
+                <div
+                  className="skeleton"
+                  style={{ width: "24px", height: "20px", borderRadius: "4px" }}
+                />
+                <div
+                  className="skeleton"
+                  style={{
+                    width: "120px",
+                    height: "16px",
+                    borderRadius: "4px",
+                  }}
+                />
+                <div className="flex-1" />
+                <div
+                  className="skeleton"
+                  style={{ width: "48px", height: "16px", borderRadius: "4px" }}
+                />
+              </div>
+            ))}
           </div>
         )}
 
         {error && (
-          <div className="text-center py-16">
-            <p className="text-[var(--color-error)] font-mono text-sm">
+          <div className="text-center" style={{ padding: "64px 0" }}>
+            <p
+              className="font-mono"
+              style={{ fontSize: "13px", color: "var(--danger)" }}
+            >
               {error}
             </p>
           </div>
         )}
 
         {!loading && !error && entries.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-[var(--color-text-muted)] font-mono text-sm">
+          <div className="text-center" style={{ padding: "64px 0" }}>
+            <p
+              className="font-mono"
+              style={{ fontSize: "13px", color: "var(--text-muted)" }}
+            >
               No teams yet. Be the first!
             </p>
           </div>
         )}
 
         {!loading && !error && entries.length > 0 && (
-          <div className="space-y-3">
+          <div
+            className="panel border-glow"
+            style={{ padding: 0, overflow: "hidden" }}
+          >
+            {/* Table header */}
+            <div
+              className="font-mono"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "12px 20px",
+                background: "var(--bg-elevated)",
+                fontSize: "11px",
+                color: "var(--text-muted)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
+              <span style={{ width: "48px" }}>#</span>
+              <span className="flex-1">TEAM</span>
+              <span style={{ width: "80px", textAlign: "right" }}>SCORE</span>
+            </div>
+
             {entries.map((entry, i) => (
               <div
                 key={entry.id}
-                className={`glass-panel p-4 flex items-center gap-4 ${
-                  i < 3 ? "neon-border" : ""
-                }`}
+                className="stagger"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "14px 20px",
+                  borderBottom:
+                    i < entries.length - 1 ? "1px solid var(--border)" : "none",
+                  borderLeft:
+                    i < 3
+                      ? `3px solid ${rankBorders[i]}`
+                      : "3px solid transparent",
+                  animationDelay: `${i * 50}ms`,
+                }}
               >
-                {/* Rank */}
                 <span
-                  className={`text-2xl font-mono font-bold w-10 text-center ${
-                    medalColors[i] ?? "text-[var(--color-text-muted)]"
-                  }`}
+                  className="font-mono"
+                  style={{
+                    width: "48px",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    color: i < 3 ? rankBorders[i] : "var(--text-dim)",
+                  }}
                 >
                   {i + 1}
                 </span>
 
-                {/* Team info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-mono font-bold text-[var(--color-text-primary)] truncate">
+                  <h3
+                    className="font-mono truncate"
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: "var(--text-primary)",
+                    }}
+                  >
                     {entry.name}
                   </h3>
-                  <p className="text-xs text-[var(--color-text-muted)] font-mono">
+                  <p
+                    className="font-mono"
+                    style={{ fontSize: "11px", color: "var(--text-dim)" }}
+                  >
                     {entry.players.length} agent
                     {entry.players.length !== 1 ? "s" : ""}
                   </p>
                 </div>
 
-                {/* Score */}
-                <span className="text-xl font-mono font-bold text-[var(--color-neon-cyan)]">
+                <span
+                  className="font-mono"
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    color: "var(--accent)",
+                    width: "80px",
+                    textAlign: "right",
+                  }}
+                >
                   {entry.teamScore}
                 </span>
               </div>

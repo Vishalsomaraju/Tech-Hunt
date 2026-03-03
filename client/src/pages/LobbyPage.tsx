@@ -157,103 +157,225 @@ export function LobbyPage() {
   const emptySlots = Math.max(0, MAX_TEAM_SIZE - players.length);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-lg">
-        {/* Title */}
-        <h1 className="text-2xl font-bold neon-text font-mono tracking-wider text-center mb-8">
-          MISSION BRIEFING
-        </h1>
-
-        <div className="glass-panel p-8 space-y-6">
-          {/* Invite Code */}
-          <div className="text-center">
-            <p className="text-sm text-[var(--color-text-muted)] mb-2">
-              INVITE CODE
-            </p>
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-4xl font-mono font-bold tracking-[0.4em] text-[var(--color-neon-cyan)]">
-                {teamCode || "------"}
-              </span>
-              <button
-                onClick={handleCopy}
-                className="p-2 rounded-lg border border-[var(--color-border-default)] hover:border-[var(--color-neon-cyan)] transition-colors text-sm"
-                title="Copy invite code"
-              >
-                {copied ? "✓" : "📋"}
-              </button>
-            </div>
-          </div>
-
-          {/* Player List */}
-          <div>
-            <p className="text-sm text-[var(--color-text-muted)] mb-3">
-              AGENTS ({players.length}/{MAX_TEAM_SIZE})
-            </p>
-            <div className="space-y-2">
-              {players.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border-default)]"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-neon-cyan)] to-[var(--color-neon-purple)] flex items-center justify-center text-sm font-bold text-[var(--color-bg-primary)]">
-                    {p.username[0]?.toUpperCase()}
-                  </div>
-                  <span className="flex-1 font-mono text-sm">
-                    {p.username}
-                    {p.id === myId && (
-                      <span className="text-[var(--color-text-muted)] ml-1">
-                        (you)
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded font-mono ${
-                      p.role === PlayerRole.LEADER
-                        ? "bg-[var(--color-neon-cyan)]/20 text-[var(--color-neon-cyan)]"
-                        : "bg-[var(--color-bg-elevated)] text-[var(--color-text-muted)]"
-                    }`}
-                  >
-                    {p.role}
-                  </span>
-                </div>
-              ))}
-              {/* Empty slots */}
-              {Array.from({ length: emptySlots }).map((_, i) => (
-                <div
-                  key={`empty-${i}`}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-dashed border-[var(--color-border-default)] opacity-30"
-                >
-                  <div className="w-8 h-8 rounded-full border border-dashed border-[var(--color-text-muted)]" />
-                  <span className="font-mono text-sm text-[var(--color-text-muted)]">
-                    Waiting...
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <p className="text-sm text-[var(--color-error)] text-center">
-              {error}
-            </p>
-          )}
-
-          {/* Launch / Waiting */}
-          {isHost ? (
-            <button
-              onClick={handleLaunch}
-              disabled={isLaunching}
-              className="btn-primary font-mono tracking-wider"
+    <div
+      className="min-h-screen flex flex-col items-center"
+      style={{
+        paddingTop: "64px",
+        padding: "64px var(--space-lg) var(--space-xl)",
+      }}
+    >
+      <div className="w-full" style={{ maxWidth: "680px" }}>
+        {/* Invite code block */}
+        <div className="text-center" style={{ marginBottom: "40px" }}>
+          <p
+            className="font-mono"
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.15em",
+              color: "var(--text-muted)",
+              marginBottom: "10px",
+            }}
+          >
+            MISSION CODE
+          </p>
+          <div
+            className="flex items-center justify-center"
+            style={{ gap: "12px" }}
+          >
+            <span
+              className="font-mono glow-text"
+              style={{
+                fontSize: "40px",
+                fontWeight: 700,
+                letterSpacing: "0.4em",
+                color: "var(--accent)",
+              }}
             >
-              {isLaunching ? "LAUNCHING..." : "LAUNCH MISSION"}
-            </button>
-          ) : (
-            <p className="text-center text-sm text-[var(--color-text-muted)] font-mono">
-              Waiting for mission leader to launch...
-            </p>
-          )}
+              {teamCode || "------"}
+            </span>
+          </div>
+          <button
+            onClick={handleCopy}
+            className="font-mono transition-colors"
+            style={{
+              fontSize: "12px",
+              color: copied ? "var(--success)" : "var(--text-muted)",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              marginTop: "8px",
+            }}
+          >
+            {copied ? "✓ Copied!" : "Copy code"}
+          </button>
         </div>
+
+        {/* Mode + difficulty badges */}
+        <div
+          className="flex justify-center flex-wrap"
+          style={{ gap: "8px", marginBottom: "40px" }}
+        >
+          <span
+            className="font-mono"
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              border: "1px solid var(--border-accent)",
+              color: "var(--text-secondary)",
+              padding: "4px 14px",
+              borderRadius: "99px",
+            }}
+          >
+            MULTIPLAYER
+          </span>
+        </div>
+
+        {/* Player List */}
+        <div
+          className="panel border-glow"
+          style={{ padding: "0", marginBottom: "32px" }}
+        >
+          {/* Header */}
+          <div
+            className="font-mono"
+            style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              padding: "16px 20px",
+              borderBottom: "1px solid var(--border)",
+              color: "var(--text-muted)",
+            }}
+          >
+            AGENTS ({players.length}/{MAX_TEAM_SIZE})
+          </div>
+
+          {/* Player rows */}
+          <div>
+            {players.map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center"
+                style={{ padding: "14px 20px", gap: "14px" }}
+              >
+                {/* Avatar */}
+                <div
+                  className="flex items-center justify-center font-mono shrink-0"
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "var(--bg-elevated)",
+                    border: "1px solid var(--border-accent)",
+                    fontSize: "14px",
+                    color: "var(--accent)",
+                  }}
+                >
+                  {p.username[0]?.toUpperCase()}
+                </div>
+                {/* Name */}
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: "var(--text-primary)",
+                    flex: 1,
+                  }}
+                >
+                  {p.username}
+                  {p.id === myId && (
+                    <span
+                      style={{ color: "var(--text-dim)", marginLeft: "4px" }}
+                    >
+                      (you)
+                    </span>
+                  )}
+                </span>
+                {/* Role badge */}
+                {p.role === PlayerRole.LEADER && (
+                  <span
+                    className="font-mono"
+                    style={{
+                      fontSize: "10px",
+                      color: "var(--accent)",
+                      border: "1px solid var(--accent-dim)",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      marginLeft: "auto",
+                    }}
+                  >
+                    LEADER
+                  </span>
+                )}
+              </div>
+            ))}
+
+            {/* Empty slots */}
+            {Array.from({ length: emptySlots }).map((_, i) => (
+              <div
+                key={`empty-${i}`}
+                className="flex items-center"
+                style={{
+                  margin: "4px 20px",
+                  padding: "14px",
+                  border: "1px dashed var(--border)",
+                  borderRadius: "var(--radius-sm)",
+                  opacity: 0.4,
+                  gap: "14px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    border: "1px dashed var(--border)",
+                  }}
+                />
+                <span
+                  className="font-mono"
+                  style={{ fontSize: "13px", color: "var(--text-dim)" }}
+                >
+                  Waiting...
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <p
+            style={{
+              fontSize: "13px",
+              color: "var(--danger)",
+              textAlign: "center",
+              marginBottom: "16px",
+            }}
+          >
+            {error}
+          </p>
+        )}
+
+        {/* Launch / Waiting */}
+        {isHost ? (
+          <button
+            onClick={handleLaunch}
+            disabled={isLaunching}
+            className="btn-primary font-mono"
+            style={{ padding: "16px", fontSize: "14px" }}
+          >
+            {isLaunching ? "LAUNCHING..." : "LAUNCH MISSION"}
+          </button>
+        ) : (
+          <p
+            className="text-center font-mono"
+            style={{ fontSize: "13px", color: "var(--text-dim)" }}
+          >
+            Waiting for mission leader to launch...
+          </p>
+        )}
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ const MAX_MESSAGES = 200;
 
 export function ChatPanel() {
   const { state, sendChat } = useGame();
-  const { user } = useAuth();
+  useAuth(); // ensure authenticated
   const [message, setMessage] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
@@ -49,78 +49,126 @@ export function ChatPanel() {
   };
 
   return (
-    <div className="glass-panel flex flex-col h-full">
+    <div
+      className="flex flex-col h-full"
+      style={{ background: "var(--bg-panel)" }}
+    >
       {/* Header */}
-      <div className="px-4 py-2 border-b border-[var(--color-border-default)]">
-        <h3 className="text-xs font-mono text-[var(--color-text-muted)] tracking-wider">
-          TEAM CHAT
-        </h3>
+      <div
+        className="font-mono shrink-0"
+        style={{
+          fontSize: "11px",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          padding: "10px 12px",
+          borderBottom: "1px solid var(--border)",
+          color: "var(--text-muted)",
+          height: "40px",
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
+        CHAT
       </div>
 
       {/* Messages */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0"
+        className="flex-1 overflow-y-auto min-h-0"
+        style={{ padding: "12px" }}
       >
         {messages.length === 0 && (
-          <p className="text-xs text-[var(--color-text-muted)] text-center py-8 font-mono">
+          <p
+            className="text-center font-mono"
+            style={{
+              fontSize: "12px",
+              color: "var(--text-dim)",
+              padding: "32px 0",
+            }}
+          >
             No messages yet
           </p>
         )}
-        {messages.map((msg, i) => {
-          // System messages (senderId === null)
-          if (!msg.senderId) {
+        <div className="flex flex-col" style={{ gap: "10px" }}>
+          {messages.map((msg, i) => {
+            // System messages (senderId === null)
+            if (!msg.senderId) {
+              return (
+                <div
+                  key={i}
+                  className="text-center font-italic"
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--text-dim)",
+                    fontStyle: "italic",
+                    padding: "2px 0",
+                  }}
+                >
+                  {msg.message}
+                </div>
+              );
+            }
+
             return (
-              <div
-                key={i}
-                className="text-center text-[10px] text-[var(--color-text-muted)] font-mono py-1"
-              >
-                {msg.message}
+              <div key={i} style={{ gap: "4px" }}>
+                <div className="flex items-baseline" style={{ gap: "6px" }}>
+                  <span
+                    className="font-mono"
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--accent)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {msg.senderName}
+                  </span>
+                  <span style={{ fontSize: "10px", color: "var(--text-dim)" }}>
+                    {new Date().toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    color: "var(--text-primary)",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {msg.message}
+                </p>
               </div>
             );
-          }
-
-          const isMe = msg.senderId === user?.id;
-          return (
-            <div
-              key={i}
-              className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
-            >
-              <span className="text-[10px] text-[var(--color-text-muted)] font-mono mb-0.5">
-                {msg.senderName}
-              </span>
-              <div
-                className={`px-3 py-1.5 rounded-lg text-sm max-w-[85%] ${
-                  isMe
-                    ? "bg-[var(--color-neon-cyan)]/10 text-[var(--color-neon-cyan)] border border-[var(--color-neon-cyan)]/20"
-                    : "bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] border border-[var(--color-border-default)]"
-                }`}
-              >
-                {msg.message}
-              </div>
-            </div>
-          );
-        })}
+          })}
+        </div>
       </div>
 
       {/* Input */}
       <form
         onSubmit={handleSend}
-        className="flex gap-2 p-3 border-t border-[var(--color-border-default)]"
+        className="flex shrink-0"
+        style={{
+          gap: "8px",
+          padding: "10px 12px",
+          borderTop: "1px solid var(--border)",
+        }}
       >
         <input
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type a message..."
-          className="input-field flex-1 !py-2 text-sm"
+          className="input-base flex-1"
+          style={{ fontSize: "13px", padding: "8px 12px" }}
           maxLength={500}
         />
         <button
           type="submit"
           disabled={!message.trim()}
-          className="px-3 py-2 rounded-lg bg-[var(--color-neon-cyan)]/10 text-[var(--color-neon-cyan)] border border-[var(--color-neon-cyan)]/30 hover:bg-[var(--color-neon-cyan)]/20 transition-colors disabled:opacity-30 text-sm font-mono"
+          className="btn-primary font-mono"
+          style={{ width: "auto", padding: "8px 14px", fontSize: "11px" }}
         >
           ↵
         </button>

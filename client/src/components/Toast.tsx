@@ -38,11 +38,11 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 let nextId = 0;
 
-const VARIANT_STYLES: Record<ToastVariant, string> = {
-  info: "border-[var(--color-neon-cyan)]/50 text-[var(--color-neon-cyan)]",
-  success: "border-[var(--color-neon-green)]/50 text-[var(--color-neon-green)]",
-  error: "border-[var(--color-error)]/50 text-[var(--color-error)]",
-  warning: "border-[var(--color-neon-amber)]/50 text-[var(--color-neon-amber)]",
+const VARIANT_COLORS: Record<ToastVariant, string> = {
+  info: "var(--accent)",
+  success: "var(--success)",
+  error: "var(--danger)",
+  warning: "var(--warning)",
 };
 
 const VARIANT_ICONS: Record<ToastVariant, string> = {
@@ -68,14 +68,35 @@ function ToastItem({
 
   return (
     <div
-      className={`flex items-center gap-2 px-4 py-3 rounded-lg border bg-[var(--color-bg-surface)]/95 backdrop-blur-sm text-sm font-mono shadow-lg animate-in slide-in-from-top-2 ${VARIANT_STYLES[toast.variant]}`}
+      className="panel border-glow animate-fade-in font-mono"
       role="alert"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "12px 16px",
+        borderLeft: `3px solid ${VARIANT_COLORS[toast.variant]}`,
+        maxWidth: "320px",
+        fontSize: "13px",
+        color: "var(--text-primary)",
+      }}
     >
-      <span className="text-base">{VARIANT_ICONS[toast.variant]}</span>
-      <span className="flex-1">{toast.message}</span>
+      <span style={{ fontSize: "14px", color: VARIANT_COLORS[toast.variant] }}>
+        {VARIANT_ICONS[toast.variant]}
+      </span>
+      <span className="flex-1" style={{ lineHeight: 1.4 }}>
+        {toast.message}
+      </span>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="opacity-60 hover:opacity-100 transition-opacity text-xs"
+        style={{
+          color: "var(--text-dim)",
+          cursor: "pointer",
+          background: "none",
+          border: "none",
+          fontSize: "11px",
+          opacity: 0.6,
+        }}
       >
         ✕
       </button>
@@ -106,9 +127,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      {/* Toast container — fixed top-center */}
+      {/* Toast container — fixed bottom-right */}
       {toasts.length > 0 && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 w-full max-w-sm pointer-events-auto">
+        <div
+          className="pointer-events-auto"
+          style={{
+            position: "fixed",
+            bottom: "16px",
+            right: "16px",
+            zIndex: 9999,
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+          }}
+        >
           {toasts.map((t) => (
             <ToastItem key={t.id} toast={t} onDismiss={dismissToast} />
           ))}
