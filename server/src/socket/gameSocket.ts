@@ -16,7 +16,28 @@
 
 import { Server, Socket } from "socket.io";
 import {
-  SocketEvents,
+  JOIN_SESSION,
+  GAME_STATE,
+  ROOM_ENTER,
+  PLAYER_JOIN,
+  PLAYER_LEAVE,
+  PLAYER_MOVED,
+  ROOM_UNLOCK,
+  PUZZLE_START,
+  PUZZLE_ANSWER,
+  REQUEST_HINT,
+  ANSWER_INCORRECT,
+  PUZZLE_HINT,
+  PUZZLE_SOLVED,
+  GAME_END,
+  TEAM_UPDATE,
+  SCORE_UPDATE,
+  SEND_CHAT,
+  CHAT_MESSAGE,
+  UPDATE_NOTES,
+  NOTES_UPDATED,
+  PLAYER_READY,
+  ERROR,
   RoomStatus,
   GamePhase,
   PlayerRole,
@@ -306,7 +327,7 @@ async function endGame(io: Server, sessionId: string, runtime: SessionRuntime) {
   );
 
   // 4. Broadcast GAME_END
-  io.to(sessionId).emit(SocketEvents.GAME_END, {
+  io.to(sessionId).emit(GAME_END, {
     teamScore: scores.teamScore,
     players: playerRows.map((p) => ({
       id: p.user_id,
@@ -351,7 +372,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
   // ────────────────────────────────────────────────────────────────────────
   // EVENT: join_session
   // ────────────────────────────────────────────────────────────────────────
-  socket.on(SocketEvents.JOIN_SESSION, async (data: { sessionId: string }) => {
+  socket.on(JOIN_SESSION, async (data: { sessionId: string }) => {
     try {
       const user = userFromSocket(socket);
       const { sessionId } = data;
@@ -372,7 +393,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
       );
 
       if (sessRows.length === 0) {
-        socket.emit(SocketEvents.ERROR, {
+        socket.emit(ERROR, {
           message: "Session not found",
           code: "SESSION_NOT_FOUND",
         });
@@ -388,7 +409,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
           [user.userId, session.team_id],
         );
         if (memberRows.length === 0) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "You are not a member of this team",
             code: "NOT_TEAM_MEMBER",
           });
@@ -486,7 +507,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
       }
 
       // 9. Emit full game state to THIS socket
-      socket.emit(SocketEvents.GAME_STATE, {
+      socket.emit(GAME_STATE, {
         session: {
           id: session.id,
           teamId: session.team_id,
@@ -501,7 +522,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
 
       // 10. Broadcast join to others in the session
       if (user) {
-        socket.to(sessionId).emit(SocketEvents.PLAYER_JOIN, {
+        socket.to(sessionId).emit(PLAYER_JOIN, {
           playerId: user.userId,
           username: user.username,
         });
@@ -512,7 +533,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
       );
     } catch (err) {
       console.error("[socket] join_session error:", err);
-      socket.emit(SocketEvents.ERROR, {
+      socket.emit(ERROR, {
         message: "Failed to join session",
         code: "JOIN_ERROR",
       });
@@ -522,147 +543,142 @@ export function registerGameEvents(io: Server, socket: Socket): void {
   // ────────────────────────────────────────────────────────────────────────
   // EVENT: player_move (ROOM_ENTER)
   // ────────────────────────────────────────────────────────────────────────
-  socket.on(
-    SocketEvents.ROOM_ENTER,
-    async (data: { sessionId: string; roomId: string }) => {
-      try {
-        const user = userFromSocket(socket);
-        if (!user) {
-          socket.emit(SocketEvents.ERROR, {
-            message: "Authentication required",
-            code: "AUTH_REQUIRED",
-          });
-          return;
-        }
-
-        const { sessionId, roomId } = data;
-        const runtime = sessions.get(sessionId);
-        if (!runtime) {
-          socket.emit(SocketEvents.ERROR, {
-            message: "Session not active",
-            code: "SESSION_NOT_ACTIVE",
-          });
-          return;
-        }
-
-        // 1. Resolve roomIndex
-        const roomIndex = runtime.roomIdToIndex.get(roomId);
-        if (roomIndex === undefined) {
-          socket.emit(SocketEvents.ERROR, {
-            message: "Room not found",
-            code: "ROOM_NOT_FOUND",
-          });
-          return;
-        }
-
-        // 2. Check that the room is not locked
-        if (runtime.roomStatuses[roomIndex] === RoomStatus.LOCKED) {
-          socket.emit(SocketEvents.ERROR, {
-            message: "Room is locked",
-            code: "ROOM_LOCKED",
-          });
-          return;
-        }
-
-        // 3. Update player position
-        runtime.playerRooms.set(user.userId, roomId);
-
-        // 4. Broadcast movement
-        io.to(sessionId).emit(SocketEvents.PLAYER_MOVED, {
-          playerId: user.userId,
-          roomId,
+  socket.on(ROOM_ENTER, async (data: { sessionId: string; roomId: string }) => {
+    try {
+      const user = userFromSocket(socket);
+      if (!user) {
+        socket.emit(ERROR, {
+          message: "Authentication required",
+          code: "AUTH_REQUIRED",
         });
+        return;
+      }
 
-        // 5. If room has an unsolved puzzle and no countdown is running → start
-        if (
-          !runtime.solvedRooms.has(roomIndex) &&
-          !isCountdownActive(sessionId, roomIndex) &&
-          !runtime.puzzleActivatedAt.has(roomIndex)
-        ) {
-          startCountdown(io, sessionId, roomIndex, async (sid, rIdx) => {
-            // ── Countdown expired — activate the puzzle ──
-            const now = new Date();
+      const { sessionId, roomId } = data;
+      const runtime = sessions.get(sessionId);
+      if (!runtime) {
+        socket.emit(ERROR, {
+          message: "Session not active",
+          code: "SESSION_NOT_ACTIVE",
+        });
+        return;
+      }
 
-            // Update DB
-            await pool.query(
-              `UPDATE game_sessions SET puzzle_activated_at = $1 WHERE id = $2`,
-              [now, sid],
-            );
+      // 1. Resolve roomIndex
+      const roomIndex = runtime.roomIdToIndex.get(roomId);
+      if (roomIndex === undefined) {
+        socket.emit(ERROR, {
+          message: "Room not found",
+          code: "ROOM_NOT_FOUND",
+        });
+        return;
+      }
 
-            // Cache activation time
-            const rt = sessions.get(sid);
-            if (rt) rt.puzzleActivatedAt.set(rIdx, now);
+      // 2. Check that the room is not locked
+      if (runtime.roomStatuses[roomIndex] === RoomStatus.LOCKED) {
+        socket.emit(ERROR, {
+          message: "Room is locked",
+          code: "ROOM_LOCKED",
+        });
+        return;
+      }
 
-            // Generate public puzzle (no answer) and broadcast
-            const puzzle = regeneratePuzzleForRoom(runtime.buildingSeed, rIdx);
-            const pubPuzzle = toPuzzlePublic(puzzle);
+      // 3. Update player position
+      runtime.playerRooms.set(user.userId, roomId);
 
-            // Track active puzzle
-            if (rt) rt.activePuzzles.set(puzzle.id, rIdx);
+      // 4. Broadcast movement
+      io.to(sessionId).emit(PLAYER_MOVED, {
+        playerId: user.userId,
+        roomId,
+      });
 
-            io.to(sid).emit(SocketEvents.PUZZLE_START, {
-              roomIndex: rIdx,
-              roomId: runtime.roomIndexToId.get(rIdx),
-              puzzle: pubPuzzle,
-            });
+      // 5. If room has an unsolved puzzle and no countdown is running → start
+      if (
+        !runtime.solvedRooms.has(roomIndex) &&
+        !isCountdownActive(sessionId, roomIndex) &&
+        !runtime.puzzleActivatedAt.has(roomIndex)
+      ) {
+        startCountdown(io, sessionId, roomIndex, async (sid, rIdx) => {
+          // ── Countdown expired — activate the puzzle ──
+          const now = new Date();
 
-            console.log(
-              `[socket] Puzzle activated: session=${sid} room=${rIdx}`,
-            );
+          // Update DB
+          await pool.query(
+            `UPDATE game_sessions SET puzzle_activated_at = $1 WHERE id = $2`,
+            [now, sid],
+          );
+
+          // Cache activation time
+          const rt = sessions.get(sid);
+          if (rt) rt.puzzleActivatedAt.set(rIdx, now);
+
+          // Generate public puzzle (no answer) and broadcast
+          const puzzle = regeneratePuzzleForRoom(runtime.buildingSeed, rIdx);
+          const pubPuzzle = toPuzzlePublic(puzzle);
+
+          // Track active puzzle
+          if (rt) rt.activePuzzles.set(puzzle.id, rIdx);
+
+          io.to(sid).emit(PUZZLE_START, {
+            roomIndex: rIdx,
+            roomId: runtime.roomIndexToId.get(rIdx),
+            puzzle: pubPuzzle,
           });
-        }
 
-        // 6. Mark this player as ready (arriving counts as ready for skip)
-        if (
-          !runtime.solvedRooms.has(roomIndex) &&
-          isCountdownActive(sessionId, roomIndex)
-        ) {
-          const { rows: memberCount } = await pool.query<{ count: string }>(
-            `SELECT count(*)::text AS count FROM team_members WHERE team_id = $1`,
-            [runtime.teamId],
-          );
-          const totalPlayers = parseInt(memberCount[0]?.count ?? "1", 10);
-          const readyCount = markPlayerReady(
-            io,
-            sessionId,
-            roomIndex,
-            user.userId,
-            totalPlayers,
-          );
-
-          // Broadcast ready count to all players
-          if (readyCount > 0) {
-            io.to(sessionId).emit(SocketEvents.PLAYER_READY, {
-              playerId: user.userId,
-              readyCount,
-              totalPlayers,
-            });
-          }
-        }
-
-        console.log(
-          `[socket] ${user.username} moved to room ${roomId} (idx=${roomIndex})`,
-        );
-      } catch (err) {
-        console.error("[socket] player_move error:", err);
-        socket.emit(SocketEvents.ERROR, {
-          message: "Failed to move",
-          code: "MOVE_ERROR",
+          console.log(`[socket] Puzzle activated: session=${sid} room=${rIdx}`);
         });
       }
-    },
-  );
+
+      // 6. Mark this player as ready (arriving counts as ready for skip)
+      if (
+        !runtime.solvedRooms.has(roomIndex) &&
+        isCountdownActive(sessionId, roomIndex)
+      ) {
+        const { rows: memberCount } = await pool.query<{ count: string }>(
+          `SELECT count(*)::text AS count FROM team_members WHERE team_id = $1`,
+          [runtime.teamId],
+        );
+        const totalPlayers = parseInt(memberCount[0]?.count ?? "1", 10);
+        const readyCount = markPlayerReady(
+          io,
+          sessionId,
+          roomIndex,
+          user.userId,
+          totalPlayers,
+        );
+
+        // Broadcast ready count to all players
+        if (readyCount > 0) {
+          io.to(sessionId).emit(PLAYER_READY, {
+            playerId: user.userId,
+            readyCount,
+            totalPlayers,
+          });
+        }
+      }
+
+      console.log(
+        `[socket] ${user.username} moved to room ${roomId} (idx=${roomIndex})`,
+      );
+    } catch (err) {
+      console.error("[socket] player_move error:", err);
+      socket.emit(ERROR, {
+        message: "Failed to move",
+        code: "MOVE_ERROR",
+      });
+    }
+  });
 
   // ────────────────────────────────────────────────────────────────────────
   // EVENT: submit_answer (PUZZLE_ANSWER)
   // ────────────────────────────────────────────────────────────────────────
   socket.on(
-    SocketEvents.PUZZLE_ANSWER,
+    PUZZLE_ANSWER,
     async (data: { sessionId: string; puzzleId: string; answer: string }) => {
       try {
         const user = userFromSocket(socket);
         if (!user) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Authentication required",
             code: "AUTH_REQUIRED",
           });
@@ -671,7 +687,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
 
         // Rate limit: max 10 answer attempts per 30 seconds
         if (isRateLimited(socket.id, "answer", 10, 30_000)) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Too many attempts — slow down",
             code: "RATE_LIMITED",
           });
@@ -681,7 +697,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
         const { sessionId, puzzleId, answer } = data;
         const runtime = sessions.get(sessionId);
         if (!runtime) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Session not active",
             code: "SESSION_NOT_ACTIVE",
           });
@@ -691,7 +707,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
         // 1. Resolve room from active puzzle
         const roomIndex = runtime.activePuzzles.get(puzzleId);
         if (roomIndex === undefined) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Puzzle is not active",
             code: "PUZZLE_NOT_ACTIVE",
           });
@@ -700,7 +716,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
 
         // 2. Already-solved guard
         if (runtime.solvedRooms.has(roomIndex)) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Puzzle already solved",
             code: "PUZZLE_ALREADY_SOLVED",
           });
@@ -726,7 +742,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
 
         if (!isCorrect) {
           // ── Wrong answer ──
-          socket.emit(SocketEvents.ANSWER_INCORRECT, {
+          socket.emit(ANSWER_INCORRECT, {
             puzzleId,
             message: "Incorrect answer — try again!",
           });
@@ -763,7 +779,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
         );
 
         // 9. Broadcast PUZZLE_SOLVED (no answer leaked)
-        io.to(sessionId).emit(SocketEvents.PUZZLE_SOLVED, {
+        io.to(sessionId).emit(PUZZLE_SOLVED, {
           roomIndex,
           roomId: runtime.roomIndexToId.get(roomIndex),
           solvedByPlayerId: user.userId,
@@ -772,7 +788,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
 
         // 10. Emit updated scores
         const scores = await buildScorePayload(runtime.teamId);
-        io.to(sessionId).emit(SocketEvents.SCORE_UPDATE, scores);
+        io.to(sessionId).emit(SCORE_UPDATE, scores);
 
         // 11. Unlock next room (or end game)
         const nextRoomIndex = roomIndex + 1;
@@ -784,7 +800,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
           // Unlock the next room
           runtime.roomStatuses[nextRoomIndex] = RoomStatus.UNLOCKED;
 
-          io.to(sessionId).emit(SocketEvents.ROOM_UNLOCK, {
+          io.to(sessionId).emit(ROOM_UNLOCK, {
             roomIndex: nextRoomIndex,
             roomId: runtime.roomIndexToId.get(nextRoomIndex),
           });
@@ -795,7 +811,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
         );
       } catch (err) {
         console.error("[socket] submit_answer error:", err);
-        socket.emit(SocketEvents.ERROR, {
+        socket.emit(ERROR, {
           message: "Failed to submit answer",
           code: "ANSWER_ERROR",
         });
@@ -807,7 +823,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
   // EVENT: request_hint
   // ────────────────────────────────────────────────────────────────────────
   socket.on(
-    SocketEvents.REQUEST_HINT,
+    REQUEST_HINT,
     async (data: {
       sessionId: string;
       puzzleId: string;
@@ -816,7 +832,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
       try {
         const user = userFromSocket(socket);
         if (!user) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Authentication required",
             code: "AUTH_REQUIRED",
           });
@@ -826,7 +842,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
         const { sessionId, puzzleId, hintLevel } = data;
         const runtime = sessions.get(sessionId);
         if (!runtime) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Session not active",
             code: "SESSION_NOT_ACTIVE",
           });
@@ -835,7 +851,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
 
         const roomIndex = runtime.activePuzzles.get(puzzleId);
         if (roomIndex === undefined) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Puzzle is not active",
             code: "PUZZLE_NOT_ACTIVE",
           });
@@ -849,7 +865,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
           [sessionId, roomIndex, hintLevel],
         );
         if (usedRows.length > 0) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "This hint level has already been used",
             code: "HINT_ALREADY_USED",
           });
@@ -860,7 +876,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
         const puzzle = regeneratePuzzleForRoom(runtime.buildingSeed, roomIndex);
         const hintIndex = HINT_LEVEL_TO_INDEX[hintLevel];
         if (hintIndex === undefined || !puzzle.hints[hintIndex]) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Invalid hint level",
             code: "INVALID_HINT_LEVEL",
           });
@@ -881,7 +897,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
         );
 
         // 5. Emit hint to requester only
-        socket.emit(SocketEvents.PUZZLE_HINT, {
+        socket.emit(PUZZLE_HINT, {
           puzzleId,
           hintLevel,
           hintText,
@@ -890,14 +906,14 @@ export function registerGameEvents(io: Server, socket: Socket): void {
 
         // 6. Emit updated scores
         const scores = await buildScorePayload(runtime.teamId);
-        io.to(sessionId).emit(SocketEvents.SCORE_UPDATE, scores);
+        io.to(sessionId).emit(SCORE_UPDATE, scores);
 
         console.log(
           `[socket] Hint requested: session=${sessionId} room=${roomIndex} level=${hintLevel} by=${user.username} penalty=${penalty}`,
         );
       } catch (err) {
         console.error("[socket] request_hint error:", err);
-        socket.emit(SocketEvents.ERROR, {
+        socket.emit(ERROR, {
           message: "Failed to get hint",
           code: "HINT_ERROR",
         });
@@ -908,43 +924,40 @@ export function registerGameEvents(io: Server, socket: Socket): void {
   // ────────────────────────────────────────────────────────────────────────
   // EVENT: send_chat
   // ────────────────────────────────────────────────────────────────────────
-  socket.on(
-    SocketEvents.SEND_CHAT,
-    (data: { sessionId: string; message: string }) => {
-      try {
-        const user = userFromSocket(socket);
-        const { sessionId, message } = data;
+  socket.on(SEND_CHAT, (data: { sessionId: string; message: string }) => {
+    try {
+      const user = userFromSocket(socket);
+      const { sessionId, message } = data;
 
-        if (!message || typeof message !== "string") return;
+      if (!message || typeof message !== "string") return;
 
-        // Rate limit: max 15 messages per 30 seconds
-        if (isRateLimited(socket.id, "chat", 15, 30_000)) return;
+      // Rate limit: max 15 messages per 30 seconds
+      if (isRateLimited(socket.id, "chat", 15, 30_000)) return;
 
-        // Sanitize and truncate
-        const trimmed = stripHtml(message).slice(0, 500);
+      // Sanitize and truncate
+      const trimmed = stripHtml(message).slice(0, 500);
 
-        io.to(sessionId).emit(SocketEvents.CHAT_MESSAGE, {
-          senderId: user?.userId ?? null,
-          senderName: user?.username ?? "Guest",
-          message: trimmed,
-          timestamp: new Date().toISOString(),
-        });
-      } catch (err) {
-        console.error("[socket] send_chat error:", err);
-      }
-    },
-  );
+      io.to(sessionId).emit(CHAT_MESSAGE, {
+        senderId: user?.userId ?? null,
+        senderName: user?.username ?? "Guest",
+        message: trimmed,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("[socket] send_chat error:", err);
+    }
+  });
 
   // ────────────────────────────────────────────────────────────────────────
   // EVENT: update_notes
   // ────────────────────────────────────────────────────────────────────────
   socket.on(
-    SocketEvents.UPDATE_NOTES,
+    UPDATE_NOTES,
     async (data: { sessionId: string; notes: string }) => {
       try {
         const user = userFromSocket(socket);
         if (!user) {
-          socket.emit(SocketEvents.ERROR, {
+          socket.emit(ERROR, {
             message: "Authentication required",
             code: "AUTH_REQUIRED",
           });
@@ -963,13 +976,13 @@ export function registerGameEvents(io: Server, socket: Socket): void {
         ]);
 
         // Broadcast to everyone EXCEPT the sender
-        socket.to(sessionId).emit(SocketEvents.NOTES_UPDATED, {
+        socket.to(sessionId).emit(NOTES_UPDATED, {
           notes: sanitized,
           updatedBy: user.userId,
         });
       } catch (err) {
         console.error("[socket] update_notes error:", err);
-        socket.emit(SocketEvents.ERROR, {
+        socket.emit(ERROR, {
           message: "Failed to update notes",
           code: "NOTES_ERROR",
         });
@@ -981,7 +994,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
   // EVENT: player_ready (PLAYER_READY)
   // ────────────────────────────────────────────────────────────────────────
   socket.on(
-    SocketEvents.PLAYER_READY,
+    PLAYER_READY,
     async (data: { sessionId: string; roomIndex: number }) => {
       try {
         const user = userFromSocket(socket);
@@ -1012,7 +1025,7 @@ export function registerGameEvents(io: Server, socket: Socket): void {
 
         // Broadcast ready count to all players
         if (readyCount > 0) {
-          io.to(sessionId).emit(SocketEvents.PLAYER_READY, {
+          io.to(sessionId).emit(PLAYER_READY, {
             playerId: user.userId,
             readyCount,
             totalPlayers,
@@ -1048,7 +1061,7 @@ export async function handleDisconnect(
   if (!user || !sessionId) return;
 
   // 1. Broadcast leave
-  io.to(sessionId).emit(SocketEvents.PLAYER_LEAVE, {
+  io.to(sessionId).emit(PLAYER_LEAVE, {
     playerId: user.userId,
   });
 
@@ -1113,7 +1126,7 @@ export async function handleDisconnect(
           [team_id],
         );
 
-        io.to(sessionId).emit(SocketEvents.TEAM_UPDATE, {
+        io.to(sessionId).emit(TEAM_UPDATE, {
           players: playerRows.map((p) => ({
             id: p.user_id,
             username: p.username,

@@ -7,7 +7,7 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import { config } from "../config/index.js";
-import { SocketEvents } from "@techhunt/shared";
+import { CONNECTED } from "@techhunt/shared";
 import type { JwtPayload } from "@techhunt/shared";
 import { registerGameEvents, handleDisconnect } from "./gameSocket.js";
 
@@ -45,7 +45,7 @@ export function initSocketHandlers(io: Server): void {
     console.log(`🔌 Socket connected: ${username} (${socket.id})`);
 
     // Confirm connection to the client
-    socket.emit(SocketEvents.CONNECTED, {
+    socket.emit(CONNECTED, {
       message: `Welcome, ${username}!`,
       socketId: socket.id,
     });

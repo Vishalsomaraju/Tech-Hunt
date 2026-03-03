@@ -10,7 +10,11 @@ import { socket } from "../socket";
 import { sessions, teams as teamsApi } from "../api/index";
 import { usePageTitle } from "../hooks/usePageTitle";
 import {
-  SocketEvents,
+  JOIN_SESSION,
+  PLAYER_JOIN,
+  PLAYER_LEAVE,
+  TEAM_UPDATE,
+  GAME_START,
   GamePhase,
   PlayerRole,
   MAX_TEAM_SIZE,
@@ -85,7 +89,7 @@ export function LobbyPage() {
     if (!sessionId) return;
 
     // Emit join
-    socket.emit(SocketEvents.JOIN_SESSION, { sessionId });
+    socket.emit(JOIN_SESSION, { sessionId });
 
     const handlePlayerJoin = (data: { playerId: string; username: string }) => {
       setPlayers((prev) => {
@@ -122,16 +126,16 @@ export function LobbyPage() {
       navigate(`/game/${sessionId}`, { replace: true });
     };
 
-    socket.on(SocketEvents.PLAYER_JOIN, handlePlayerJoin);
-    socket.on(SocketEvents.PLAYER_LEAVE, handlePlayerLeave);
-    socket.on(SocketEvents.TEAM_UPDATE, handleTeamUpdate);
-    socket.on(SocketEvents.GAME_START, handleGameStart);
+    socket.on(PLAYER_JOIN, handlePlayerJoin);
+    socket.on(PLAYER_LEAVE, handlePlayerLeave);
+    socket.on(TEAM_UPDATE, handleTeamUpdate);
+    socket.on(GAME_START, handleGameStart);
 
     return () => {
-      socket.off(SocketEvents.PLAYER_JOIN, handlePlayerJoin);
-      socket.off(SocketEvents.PLAYER_LEAVE, handlePlayerLeave);
-      socket.off(SocketEvents.TEAM_UPDATE, handleTeamUpdate);
-      socket.off(SocketEvents.GAME_START, handleGameStart);
+      socket.off(PLAYER_JOIN, handlePlayerJoin);
+      socket.off(PLAYER_LEAVE, handlePlayerLeave);
+      socket.off(TEAM_UPDATE, handleTeamUpdate);
+      socket.off(GAME_START, handleGameStart);
     };
   }, [sessionId, myId, navigate]);
 

@@ -11,7 +11,11 @@
 // ============================================================================
 
 import { Server } from "socket.io";
-import { SocketEvents, ROOM_COUNTDOWN_SECONDS } from "@techhunt/shared";
+import {
+  TIMER_SYNC,
+  SKIP_COUNTDOWN,
+  ROOM_COUNTDOWN_SECONDS,
+} from "@techhunt/shared";
 
 // ─── Internal State ──────────────────────────────────────────────────────────
 
@@ -74,7 +78,7 @@ export function startCountdown(
   let remaining = durationSec;
 
   // Emit the initial tick immediately so clients know the timer started
-  io.to(sessionId).emit(SocketEvents.TIMER_SYNC, {
+  io.to(sessionId).emit(TIMER_SYNC, {
     roomIndex,
     remaining,
     total: durationSec,
@@ -88,7 +92,7 @@ export function startCountdown(
     remaining -= 1;
     if (remaining < 0) remaining = 0;
 
-    io.to(sessionId).emit(SocketEvents.TIMER_SYNC, {
+    io.to(sessionId).emit(TIMER_SYNC, {
       roomIndex,
       remaining,
       total: durationSec,
@@ -219,7 +223,7 @@ function skipCountdown(io: Server, sessionId: string, roomIndex: number): void {
   readyPlayers.delete(k);
 
   // Notify all clients the countdown was skipped
-  io.to(sessionId).emit(SocketEvents.SKIP_COUNTDOWN, {
+  io.to(sessionId).emit(SKIP_COUNTDOWN, {
     sessionId,
     roomIndex,
     message: "All agents present — activating now",

@@ -15,7 +15,30 @@ import {
 } from "react";
 import { socket } from "../socket";
 import {
-  SocketEvents,
+  JOIN_SESSION,
+  GAME_STATE,
+  ROOM_ENTER,
+  PLAYER_JOIN,
+  PLAYER_LEAVE,
+  PLAYER_MOVED,
+  ROOM_UNLOCK,
+  PUZZLE_START,
+  PUZZLE_ANSWER,
+  REQUEST_HINT,
+  ANSWER_INCORRECT,
+  PUZZLE_HINT,
+  PUZZLE_SOLVED,
+  GAME_END,
+  TIMER_SYNC,
+  TEAM_UPDATE,
+  SCORE_UPDATE,
+  SEND_CHAT,
+  CHAT_MESSAGE,
+  UPDATE_NOTES,
+  NOTES_UPDATED,
+  PLAYER_READY,
+  SKIP_COUNTDOWN,
+  ERROR,
   GamePhase,
   RoomStatus,
   HintLevel,
@@ -460,7 +483,7 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
 
   // ── Join session & register listeners ──
   useEffect(() => {
-    socket.emit(SocketEvents.JOIN_SESSION, { sessionId });
+    socket.emit(JOIN_SESSION, { sessionId });
 
     const onGameState = (data: {
       session: GameSession;
@@ -554,49 +577,49 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
     const onReconnect = () => {
       dispatch({ type: "SOCKET_RECONNECTED" });
       // Re-join the same session to get fresh state
-      socket.emit(SocketEvents.JOIN_SESSION, { sessionId });
+      socket.emit(JOIN_SESSION, { sessionId });
     };
 
-    socket.on(SocketEvents.GAME_STATE, onGameState);
-    socket.on(SocketEvents.PLAYER_JOIN, onPlayerJoin);
-    socket.on(SocketEvents.PLAYER_LEAVE, onPlayerLeave);
-    socket.on(SocketEvents.PLAYER_MOVED, onPlayerMoved);
-    socket.on(SocketEvents.TIMER_SYNC, onTimerSync);
-    socket.on(SocketEvents.PUZZLE_START, onPuzzleStart);
-    socket.on(SocketEvents.PUZZLE_SOLVED, onPuzzleSolved);
-    socket.on(SocketEvents.ANSWER_INCORRECT, onAnswerIncorrect);
-    socket.on(SocketEvents.PUZZLE_HINT, onPuzzleHint);
-    socket.on(SocketEvents.ROOM_UNLOCK, onRoomUnlock);
-    socket.on(SocketEvents.SCORE_UPDATE, onScoreUpdate);
-    socket.on(SocketEvents.CHAT_MESSAGE, onChatMessage);
-    socket.on(SocketEvents.NOTES_UPDATED, onNotesUpdated);
-    socket.on(SocketEvents.TEAM_UPDATE, onTeamUpdate);
-    socket.on(SocketEvents.GAME_END, onGameEnd);
-    socket.on(SocketEvents.ERROR, onError);
-    socket.on(SocketEvents.SKIP_COUNTDOWN, onSkipCountdown);
-    socket.on(SocketEvents.PLAYER_READY, onPlayerReady);
+    socket.on(GAME_STATE, onGameState);
+    socket.on(PLAYER_JOIN, onPlayerJoin);
+    socket.on(PLAYER_LEAVE, onPlayerLeave);
+    socket.on(PLAYER_MOVED, onPlayerMoved);
+    socket.on(TIMER_SYNC, onTimerSync);
+    socket.on(PUZZLE_START, onPuzzleStart);
+    socket.on(PUZZLE_SOLVED, onPuzzleSolved);
+    socket.on(ANSWER_INCORRECT, onAnswerIncorrect);
+    socket.on(PUZZLE_HINT, onPuzzleHint);
+    socket.on(ROOM_UNLOCK, onRoomUnlock);
+    socket.on(SCORE_UPDATE, onScoreUpdate);
+    socket.on(CHAT_MESSAGE, onChatMessage);
+    socket.on(NOTES_UPDATED, onNotesUpdated);
+    socket.on(TEAM_UPDATE, onTeamUpdate);
+    socket.on(GAME_END, onGameEnd);
+    socket.on(ERROR, onError);
+    socket.on(SKIP_COUNTDOWN, onSkipCountdown);
+    socket.on(PLAYER_READY, onPlayerReady);
     socket.on("disconnect", onDisconnect);
     socket.on("connect", onReconnect);
 
     return () => {
-      socket.off(SocketEvents.GAME_STATE, onGameState);
-      socket.off(SocketEvents.PLAYER_JOIN, onPlayerJoin);
-      socket.off(SocketEvents.PLAYER_LEAVE, onPlayerLeave);
-      socket.off(SocketEvents.PLAYER_MOVED, onPlayerMoved);
-      socket.off(SocketEvents.TIMER_SYNC, onTimerSync);
-      socket.off(SocketEvents.PUZZLE_START, onPuzzleStart);
-      socket.off(SocketEvents.PUZZLE_SOLVED, onPuzzleSolved);
-      socket.off(SocketEvents.ANSWER_INCORRECT, onAnswerIncorrect);
-      socket.off(SocketEvents.PUZZLE_HINT, onPuzzleHint);
-      socket.off(SocketEvents.ROOM_UNLOCK, onRoomUnlock);
-      socket.off(SocketEvents.SCORE_UPDATE, onScoreUpdate);
-      socket.off(SocketEvents.CHAT_MESSAGE, onChatMessage);
-      socket.off(SocketEvents.NOTES_UPDATED, onNotesUpdated);
-      socket.off(SocketEvents.TEAM_UPDATE, onTeamUpdate);
-      socket.off(SocketEvents.GAME_END, onGameEnd);
-      socket.off(SocketEvents.ERROR, onError);
-      socket.off(SocketEvents.SKIP_COUNTDOWN, onSkipCountdown);
-      socket.off(SocketEvents.PLAYER_READY, onPlayerReady);
+      socket.off(GAME_STATE, onGameState);
+      socket.off(PLAYER_JOIN, onPlayerJoin);
+      socket.off(PLAYER_LEAVE, onPlayerLeave);
+      socket.off(PLAYER_MOVED, onPlayerMoved);
+      socket.off(TIMER_SYNC, onTimerSync);
+      socket.off(PUZZLE_START, onPuzzleStart);
+      socket.off(PUZZLE_SOLVED, onPuzzleSolved);
+      socket.off(ANSWER_INCORRECT, onAnswerIncorrect);
+      socket.off(PUZZLE_HINT, onPuzzleHint);
+      socket.off(ROOM_UNLOCK, onRoomUnlock);
+      socket.off(SCORE_UPDATE, onScoreUpdate);
+      socket.off(CHAT_MESSAGE, onChatMessage);
+      socket.off(NOTES_UPDATED, onNotesUpdated);
+      socket.off(TEAM_UPDATE, onTeamUpdate);
+      socket.off(GAME_END, onGameEnd);
+      socket.off(ERROR, onError);
+      socket.off(SKIP_COUNTDOWN, onSkipCountdown);
+      socket.off(PLAYER_READY, onPlayerReady);
       socket.off("disconnect", onDisconnect);
       socket.off("connect", onReconnect);
 
@@ -609,21 +632,21 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
   const moveToRoom = useCallback(
     (roomId: string) => {
       dispatch({ type: "SET_CURRENT_ROOM", payload: roomId });
-      socket.emit(SocketEvents.ROOM_ENTER, { sessionId, roomId });
+      socket.emit(ROOM_ENTER, { sessionId, roomId });
     },
     [sessionId],
   );
 
   const submitAnswer = useCallback(
     (puzzleId: string, answer: string) => {
-      socket.emit(SocketEvents.PUZZLE_ANSWER, { sessionId, puzzleId, answer });
+      socket.emit(PUZZLE_ANSWER, { sessionId, puzzleId, answer });
     },
     [sessionId],
   );
 
   const requestHint = useCallback(
     (puzzleId: string, hintLevel: HintLevel) => {
-      socket.emit(SocketEvents.REQUEST_HINT, {
+      socket.emit(REQUEST_HINT, {
         sessionId,
         puzzleId,
         hintLevel,
@@ -634,7 +657,7 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
 
   const sendChat = useCallback(
     (message: string) => {
-      socket.emit(SocketEvents.SEND_CHAT, { sessionId, message });
+      socket.emit(SEND_CHAT, { sessionId, message });
     },
     [sessionId],
   );
@@ -646,7 +669,7 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
       // Debounce 500ms
       if (notesTimerRef.current) clearTimeout(notesTimerRef.current);
       notesTimerRef.current = setTimeout(() => {
-        socket.emit(SocketEvents.UPDATE_NOTES, { sessionId, notes });
+        socket.emit(UPDATE_NOTES, { sessionId, notes });
       }, 500);
     },
     [sessionId],
@@ -658,7 +681,7 @@ export function GameProvider({ sessionId, children }: GameProviderProps) {
 
   const signalReady = useCallback(
     (roomIndex: number) => {
-      socket.emit(SocketEvents.PLAYER_READY, { sessionId, roomIndex });
+      socket.emit(PLAYER_READY, { sessionId, roomIndex });
     },
     [sessionId],
   );
