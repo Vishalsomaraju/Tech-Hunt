@@ -51,10 +51,11 @@ CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id);
 CREATE TABLE IF NOT EXISTS game_sessions (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   team_id         UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-  building_seed   BIGINT NOT NULL,
-  phase           VARCHAR(16) NOT NULL DEFAULT 'LOBBY',
-  started_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  ended_at        TIMESTAMPTZ,
+  building_seed        BIGINT NOT NULL,
+  phase                VARCHAR(16) NOT NULL DEFAULT 'LOBBY',
+  started_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ended_at             TIMESTAMPTZ,
+  puzzle_activated_at  TIMESTAMPTZ,
   notes           TEXT NOT NULL DEFAULT '',
   is_resumable    BOOLEAN NOT NULL DEFAULT FALSE
 );

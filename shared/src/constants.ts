@@ -25,6 +25,12 @@ export const ROOM_COUNTDOWN_SECONDS = 60;
 export const MIN_TIME_BONUS = 0;
 export const MAX_TIME_BONUS = 50;
 
+/** Default number of floors in a building */
+export const DEFAULT_FLOORS = 1;
+
+/** Default number of rooms per floor */
+export const DEFAULT_ROOMS_PER_FLOOR = 5;
+
 /** Team invite code length */
 export const TEAM_CODE_LENGTH = 6;
 

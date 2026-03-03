@@ -94,8 +94,8 @@ export interface Room {
 
 // ─── Puzzles ─────────────────────────────────────────────────────────────────
 
-/** A generated puzzle instance */
-export interface Puzzle {
+/** A generated puzzle instance sent to the client (no answer) */
+export interface PuzzlePublic {
   id: string;
   roomId: string;
   type: PuzzleType;
@@ -104,8 +104,14 @@ export interface Puzzle {
   timeLimit: number;
   prompt: string;
   hints: string[];
-  /** The correct answer — only available server-side */
-  answer?: string;
+}
+
+/**
+ * A generated puzzle instance kept on the server.
+ * Never send this to the client.
+ */
+export interface PuzzleInternal extends PuzzlePublic {
+  answer: string;
 }
 
 /** A player's attempt at solving a puzzle */
@@ -141,6 +147,12 @@ export interface GameSession {
   phase: GamePhase;
   startedAt: string;
   endedAt?: string;
+  /**
+   * Timestamp when the room countdown finishes and the puzzle officially
+   * begins.  Used server-side to compute fair time bonuses without relying
+   * on the client's clock.
+   */
+  puzzleActivatedAt?: string;
   /** Collaborative notepad shared by the team */
   notes: string;
   isResumable: boolean;
