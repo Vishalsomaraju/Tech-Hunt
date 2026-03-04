@@ -3,17 +3,18 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@techhunt/shared": path.resolve(__dirname, "../shared/src/index.ts"),
+      "@techhunt/shared": path.resolve(
+        __dirname,
+        "../shared/dist/esm/index.js",
+      ),
     },
   },
   server: {
     port: 5173,
-    // Proxy API requests to the backend during development
     proxy: {
       "/api": {
         target: "http://localhost:3001",
