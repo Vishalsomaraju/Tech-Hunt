@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { teams, sessions } from "../api/index";
-import { SessionType } from "@techhunt/shared";
+
 import { usePageTitle } from "../hooks/usePageTitle";
 import { HowToPlayModal } from "../components/HowToPlayModal";
 
@@ -63,7 +63,7 @@ export function HomePage() {
     try {
       // Create a team, then create a session
       const teamName = `${displayName}'s Team`;
-      const team = await teams.create(teamName, SessionType.MULTIPLAYER);
+      const team = await teams.create(teamName, "MULTIPLAYER");
       const session = await sessions.create(team.id);
       navigate(`/lobby/${session.id}`, {
         state: { teamId: team.id, teamCode: team.code },
