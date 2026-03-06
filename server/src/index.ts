@@ -105,9 +105,9 @@ async function main(): Promise<void> {
 ╔══════════════════════════════════════════════╗
 ║           🏗️  TECH HUNT Server               ║
 ║──────────────────────────────────────────────║
-║  HTTP   → http://localhost:${config.port}             ║
-║  Socket → ws://localhost:${config.port}               ║
-║  CORS   → ${config.corsOrigin}        ║
+║  HTTP   → https://techhunt-server.onrender.com       ║
+║  Socket → wss://techhunt-server.onrender.com         ║
+║  CORS   → ${config.corsOrigin}                       ║
 ╚══════════════════════════════════════════════╝
     `);
   });
